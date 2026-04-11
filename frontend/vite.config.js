@@ -6,4 +6,5 @@ import { crx } from "@crxjs/vite-plugin"
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), crx({ manifest })],
+  // plugins: [react()],
 })
