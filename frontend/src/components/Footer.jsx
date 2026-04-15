@@ -4,7 +4,7 @@ function Footer() {
   return (
     <div className="mt-4 pt-4 text-center relative z-10">
       <div
-        className="w-full h-[2px] rounded-full mb-4"
+        className="w-full h-0.5 rounded-full mb-4"
         style={{
           background: "linear-gradient(90deg, transparent, #ff85bb, #ffcee3, #ff85bb, transparent)",
         }}

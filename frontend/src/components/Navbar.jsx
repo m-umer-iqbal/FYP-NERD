@@ -17,7 +17,7 @@ function Navbar({ isSignedIn, user, onSignIn, onSignOut }) {
             NERD
           </h1>
           <div
-            className="absolute -bottom-1 left-0 h-[3px] rounded-full"
+            className="absolute -bottom-1 left-0 h-0.75 rounded-full"
             style={{
               width: "85%",
               background: "linear-gradient(90deg, #ff85bb 0%, #ffcee3 60%, transparent 100%)",
@@ -29,7 +29,7 @@ function Navbar({ isSignedIn, user, onSignIn, onSignOut }) {
         {isSignedIn && (
           <div className="mt-2">
             <p
-              className="text-xs font-medium truncate max-w-[180px]"
+              className="text-xs font-medium truncate max-w-45"
               style={{
                 color: "#021a54",
                 opacity: 0.9,

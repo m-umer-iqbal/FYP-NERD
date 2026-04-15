@@ -38,8 +38,8 @@ function App() {
 
   return (
     <div
-      className={`${isSignedIn && "h-[540px]"}
-        w-[400px] h-[525px] p-6 border-0 box-border flex flex-col 
+      className={`${isSignedIn && "h-135"}
+        w-100 h-131.25 p-6 border-0 box-border flex flex-col 
         bg-[#f5f5f5] overflow-hidden transition-all duration-500 ease-out
         ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
       `}
