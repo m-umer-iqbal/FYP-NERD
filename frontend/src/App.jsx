@@ -38,11 +38,12 @@ function App() {
 
   return (
     <div
-      className={`${isSignedIn && "h-135"}
-        w-100 h-131.25 p-6 border-0 box-border flex flex-col 
-        bg-[#f5f5f5] overflow-hidden transition-all duration-500 ease-out
-        ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
-      `}
+      className={`
+    w-100 p-6 border-0 box-border flex flex-col 
+    bg-[#f5f5f5] overflow-hidden transition-all duration-500 ease-out
+    ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
+    ${isSignedIn ? "h-135" : "h-131.25"}
+  `}
       style={{
         background: "linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%)",
         boxShadow: "0 20px 35px -10px rgba(2, 26, 84, 0.2)",
@@ -65,7 +66,7 @@ function App() {
 
       <Footer />
 
-      <style jsx>{`
+      <style>{`
         @keyframes pulse {
           0%, 100% {
             transform: scale(1) rotate(0deg);
