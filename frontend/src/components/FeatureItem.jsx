@@ -1,9 +1,9 @@
 import React from 'react';
 
-function FeatureItem({ item, isHovered, onMouseEnter, onMouseLeave, index }) {
+function FeatureItem({ item, isHovered, onMouseEnter, onMouseLeave, index, onClick }) {
   return (
     <div
-      className="group relative flex justify-between items-center py-2 px-2 rounded-xl transition-all duration-300"
+      className="group relative flex justify-between items-center py-2 px-2 rounded-xl transition-all duration-300 cursor-pointer"
       style={{
         background: isHovered ? "#ffffff" : "transparent",
         boxShadow: isHovered ? "0 8px 20px rgba(2, 26, 84, 0.08)" : "none",
@@ -12,6 +12,7 @@ function FeatureItem({ item, isHovered, onMouseEnter, onMouseLeave, index }) {
       }}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
+      onClick={onClick}
     >
       <span
         className="text-xl font-semibold transition-all duration-300"
@@ -24,27 +25,28 @@ function FeatureItem({ item, isHovered, onMouseEnter, onMouseLeave, index }) {
       </span>
 
       <button
-        className="cursor-pointer px-6 py-2 font-black text-xs uppercase tracking-wider transition-all duration-300 group-hover:scale-105"
+        className="cursor-pointer px-4 py-2 font-semibold text-xs uppercase tracking-wider transition-all duration-300 flex items-center gap-2"
         style={{
           background: "transparent",
           border: "2px solid #021a54",
           color: "#021a54",
-          borderRadius: "30px",
+          borderRadius: "8px",
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.background = "#ff85bb";
           e.currentTarget.style.borderColor = "#ff85bb";
           e.currentTarget.style.color = "#021a54";
-          e.currentTarget.style.boxShadow = "0 4px 12px rgba(255, 133, 187, 0.3)";
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.background = "transparent";
           e.currentTarget.style.borderColor = "#021a54";
           e.currentTarget.style.color = "#021a54";
-          e.currentTarget.style.boxShadow = "none";
         }}
       >
-        GO →
+        GO
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 4L10.59 5.41L16.17 11H4V13H16.17L10.59 18.59L12 20L20 12L12 4Z" fill="currentColor" />
+        </svg>
       </button>
     </div>
   );

@@ -3,11 +3,21 @@ import { useClerk, useUser } from '@clerk/chrome-extension';
 import DecorativeCircle from './components/DecorativeCircle';
 import Navbar from './components/Navbar';
 import FeatureList from './components/FeatureList';
+import LocalFormSaver from './components/LocalFormSaver';
 import LoginPrompt from './components/LoginPrompt';
 import Footer from './components/Footer';
 
+// Theme colors from App.jsx
+const THEME = {
+  primary: '#021A54',
+  accent: '#FF85BB',
+  lightPink: '#FFCEE3',
+  lightGray: '#F5F5F5'
+};
+
 function App() {
   const [isVisible, setIsVisible] = useState(false);
+  const [selectedFeature, setSelectedFeature] = useState(null);
   const { isSignedIn, user } = useUser();
   const clerk = useClerk();
 
@@ -19,6 +29,14 @@ function App() {
     { id: 5, name: "ShotStack" },
     { id: 6, name: "Translify" },
   ];
+
+  const handleFeatureSelect = (feature) => {
+    setSelectedFeature(feature);
+  };
+
+  const handleBack = () => {
+    setSelectedFeature(null);
+  };
 
   useEffect(() => {
     setIsVisible(true);
@@ -36,17 +54,21 @@ function App() {
     clerk.signOut();
   };
 
+  const isLocalFormSaver = selectedFeature && selectedFeature.id === 3;
+
   return (
     <div
       className={`
     w-100 p-6 border-0 box-border flex flex-col 
-    bg-[#f5f5f5] overflow-hidden transition-all duration-500 ease-out
+    bg-[#f5f5f5] transition-all duration-500 ease-out
     ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
     ${isSignedIn ? "h-135" : "h-131.25"}
   `}
       style={{
         background: "linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%)",
         boxShadow: "0 20px 35px -10px rgba(2, 26, 84, 0.2)",
+        overflow: 'hidden',
+        height: isSignedIn ? (isLocalFormSaver ? '560px' : '540px') : '525px',
       }}
     >
       <DecorativeCircle />
@@ -59,7 +81,15 @@ function App() {
       />
 
       {isSignedIn ? (
-        <FeatureList features={features} />
+        selectedFeature ? (
+          selectedFeature.id === 3 ? (
+            <LocalFormSaver theme={THEME} onBack={handleBack} />
+          ) : (
+            <FeatureList features={features} onFeatureSelect={handleFeatureSelect} />
+          )
+        ) : (
+          <FeatureList features={features} onFeatureSelect={handleFeatureSelect} />
+        )
       ) : (
         <LoginPrompt />
       )}

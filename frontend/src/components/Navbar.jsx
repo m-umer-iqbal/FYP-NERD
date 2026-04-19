@@ -25,7 +25,7 @@ function Navbar({ isSignedIn, user, onSignIn, onSignOut }) {
             }}
           />
         </div>
-        
+
         {isSignedIn && (
           <div className="mt-2">
             <p
@@ -45,23 +45,22 @@ function Navbar({ isSignedIn, user, onSignIn, onSignOut }) {
       {!isSignedIn ? (
         <button
           onClick={onSignIn}
-          className="cursor-pointer px-5 py-1.5 font-black text-xs uppercase tracking-wider transition-all duration-300 hover:scale-105 active:scale-95"
+          className="cursor-pointer px-4 py-2 font-semibold text-xs uppercase tracking-wider transition-all duration-300"
           style={{
-            background: "#021a54",
-            color: "#ffffff",
-            border: "none",
-            borderRadius: "30px",
-            boxShadow: "0 4px 10px rgba(2, 26, 84, 0.3)",
+            background: "transparent",
+            border: "2px solid #021a54",
+            color: "#021a54",
+            borderRadius: "8px",
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = "#ff85bb";
+            e.currentTarget.style.borderColor = "#ff85bb";
             e.currentTarget.style.color = "#021a54";
-            e.currentTarget.style.boxShadow = "0 6px 15px rgba(255, 133, 187, 0.4)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = "#021a54";
-            e.currentTarget.style.color = "#ffffff";
-            e.currentTarget.style.boxShadow = "0 4px 10px rgba(2, 26, 84, 0.3)";
+            e.currentTarget.style.background = "transparent";
+            e.currentTarget.style.borderColor = "#021a54";
+            e.currentTarget.style.color = "#021a54";
           }}
         >
           Login
@@ -70,13 +69,22 @@ function Navbar({ isSignedIn, user, onSignIn, onSignOut }) {
         <div className="flex items-center gap-2">
           <button
             onClick={onSignOut}
-            className="cursor-pointer px-3 py-1.5 font-black text-xs uppercase tracking-wider transition-all duration-300 hover:scale-105 active:scale-95"
+            className="cursor-pointer px-4 py-2 font-semibold text-xs uppercase tracking-wider transition-all duration-300"
             style={{
-              background: "#ff85bb",
+              background: "transparent",
+              border: "2px solid #021a54",
               color: "#021a54",
-              border: "none",
-              borderRadius: "30px",
-              boxShadow: "0 4px 10px rgba(255, 133, 187, 0.3)",
+              borderRadius: "8px",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "#ff85bb";
+              e.currentTarget.style.borderColor = "#ff85bb";
+              e.currentTarget.style.color = "#021a54";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.borderColor = "#021a54";
+              e.currentTarget.style.color = "#021a54";
             }}
           >
             Log Out

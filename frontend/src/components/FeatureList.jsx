@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import FeatureItem from './FeatureItem';
 
-function FeatureList({ features }) {
+function FeatureList({ features, onFeatureSelect }) {
   const [hoveredId, setHoveredId] = useState(null);
 
   return (
@@ -14,6 +14,7 @@ function FeatureList({ features }) {
           onMouseEnter={() => setHoveredId(item.id)}
           onMouseLeave={() => setHoveredId(null)}
           index={index}
+          onClick={() => onFeatureSelect && onFeatureSelect(item)}
         />
       ))}
     </div>
