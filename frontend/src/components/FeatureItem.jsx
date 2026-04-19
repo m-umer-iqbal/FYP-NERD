@@ -14,7 +14,7 @@ function FeatureItem({ item, isHovered, onMouseEnter, onMouseLeave, index }) {
       onMouseLeave={onMouseLeave}
     >
       <span
-        className="text-xl font-black transition-all duration-300"
+        className="text-xl font-semibold transition-all duration-300"
         style={{
           color: isHovered ? "#ff85bb" : "#021a54",
           letterSpacing: isHovered ? "0.5px" : "0",

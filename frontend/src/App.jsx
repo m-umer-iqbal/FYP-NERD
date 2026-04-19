@@ -12,9 +12,9 @@ function App() {
   const clerk = useClerk();
 
   const features = [
-    { id: 1, name: "Responza" },
-    { id: 2, name: "DOMinex" },
-    { id: 3, name: "FormLock" },
+    { id: 1, name: "Screen Size Emulator" },
+    { id: 2, name: "DOM Tree" },
+    { id: 3, name: "Local Form Saver" },
     { id: 4, name: "StylePeek" },
     { id: 5, name: "ShotStack" },
     { id: 6, name: "Translify" },

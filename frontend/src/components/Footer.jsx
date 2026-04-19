@@ -10,7 +10,7 @@ function Footer() {
         }}
       />
       <p
-        className="font-black text-xs tracking-wider animate-pulse-slow"
+        className="font-semibold text-xs tracking-wider animate-pulse-slow"
         style={{ color: "#021a54", opacity: 0.7 }}
       >
         © {new Date().getFullYear()} NERD. All Rights Reserved.

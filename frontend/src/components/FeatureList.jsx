@@ -5,7 +5,7 @@ function FeatureList({ features }) {
   const [hoveredId, setHoveredId] = useState(null);
 
   return (
-    <div className="flex-1 flex flex-col gap-2 relative z-10">
+    <div className="flex-1 flex flex-col gap-2 relative z-10 cursor-default">
       {features.map((item, index) => (
         <FeatureItem
           key={item.id}

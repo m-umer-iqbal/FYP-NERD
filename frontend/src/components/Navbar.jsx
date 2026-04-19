@@ -29,7 +29,7 @@ function Navbar({ isSignedIn, user, onSignIn, onSignOut }) {
         {isSignedIn && (
           <div className="mt-2">
             <p
-              className="text-xs font-medium truncate max-w-45"
+              className="text-xs font-semibold truncate max-w-45"
               style={{
                 color: "#021a54",
                 opacity: 0.9,
