@@ -4,6 +4,11 @@ import DecorativeCircle from './components/DecorativeCircle';
 import Navbar from './components/Navbar';
 import FeatureList from './components/FeatureList';
 import LocalFormSaver from './components/LocalFormSaver';
+import ScreenSizeEmulator from './components/ScreenSizeEmulator';
+import DOMTree from './components/DOMTree';
+import StylePeek from './components/StylePeek';
+import ShotStack from './components/ShotStack';
+import Translify from './components/Translify';
 import LoginPrompt from './components/LoginPrompt';
 import Footer from './components/Footer';
 
@@ -54,7 +59,7 @@ function App() {
     clerk.signOut();
   };
 
-  const isLocalFormSaver = selectedFeature && selectedFeature.id === 3;
+  const isFeaturePage = selectedFeature !== null;
 
   return (
     <div
@@ -68,25 +73,30 @@ function App() {
         background: "linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%)",
         boxShadow: "0 20px 35px -10px rgba(2, 26, 84, 0.2)",
         overflow: 'hidden',
-        height: isSignedIn ? (isLocalFormSaver ? '560px' : '540px') : '525px',
+        height: isSignedIn ? (isFeaturePage ? '560px' : '540px') : '525px',
       }}
     >
       <DecorativeCircle />
 
-      <Navbar
-        isSignedIn={isSignedIn}
-        user={user}
-        onSignIn={handleSignIn}
-        onSignOut={handleSignOut}
-      />
+      {!isFeaturePage && (
+        <Navbar
+          isSignedIn={isSignedIn}
+          user={user}
+          onSignIn={handleSignIn}
+          onSignOut={handleSignOut}
+        />
+      )}
 
       {isSignedIn ? (
         selectedFeature ? (
-          selectedFeature.id === 3 ? (
-            <LocalFormSaver theme={THEME} onBack={handleBack} />
-          ) : (
-            <FeatureList features={features} onFeatureSelect={handleFeatureSelect} />
-          )
+          <>
+            {selectedFeature.id === 1 && <ScreenSizeEmulator theme={THEME} onBack={handleBack} />}
+            {selectedFeature.id === 2 && <DOMTree theme={THEME} onBack={handleBack} />}
+            {selectedFeature.id === 3 && <LocalFormSaver theme={THEME} onBack={handleBack} />}
+            {selectedFeature.id === 4 && <StylePeek theme={THEME} onBack={handleBack} />}
+            {selectedFeature.id === 5 && <ShotStack theme={THEME} onBack={handleBack} />}
+            {selectedFeature.id === 6 && <Translify theme={THEME} onBack={handleBack} />}
+          </>
         ) : (
           <FeatureList features={features} onFeatureSelect={handleFeatureSelect} />
         )
@@ -94,7 +104,7 @@ function App() {
         <LoginPrompt />
       )}
 
-      <Footer />
+      {!isFeaturePage && <Footer />}
 
       <style>{`
         @keyframes pulse {

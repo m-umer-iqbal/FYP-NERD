@@ -10,16 +10,15 @@ function LocalFormSaver({ theme, onBack }) {
 
     // Load collections from localStorage
     useEffect(() => {
-        const savedCollections = localStorage.getItem('formSaver_collections');
-        if (savedCollections) {
-            setCollections(JSON.parse(savedCollections));
-        }
+        chrome.storage.local.get(['formSaver_collections'], (result) => {
+            setCollections(result.formSaver_collections || []);
+        });
     }, []);
 
-    // Save collections to localStorage
     const saveCollections = (newCollections) => {
-        setCollections(newCollections);
-        localStorage.setItem('formSaver_collections', JSON.stringify(newCollections));
+        chrome.storage.local.set({ formSaver_collections: newCollections }, () => {
+            setCollections(newCollections);
+        });
     };
 
     // Add new collection
@@ -27,7 +26,8 @@ function LocalFormSaver({ theme, onBack }) {
         const newCollection = {
             id: Date.now(),
             name: 'New Collection',
-            forms: 0
+            forms: 0,
+            objects: []
         };
         saveCollections([...collections, newCollection]);
     };
