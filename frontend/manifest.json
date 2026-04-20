@@ -4,15 +4,22 @@
     "version": "1.0.0",
     "description": "A browser extension.",
     "permissions": [
-        "storage"
+        "storage",
+        "activeTab"
+    ],
+    "host_permissions": [
+        "http://*/*",
+        "https://*/*"
     ],
     "content_scripts": [
         {
             "matches": [
-                "<all_urls>"
+                "http://*/*",
+                "https://*/*"
             ],
+            "run_at": "document_idle",
             "js": [
-                "src/contentScript.js"
+                "./src/scripts/LocalFormSaver.js"
             ]
         }
     ],
