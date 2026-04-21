@@ -1,21 +1,27 @@
 {
     "manifest_version": 3,
     "name": "NERD",
-    "version": "1.0.0",
-    "description": "A browser extension.",
+    "version": "2.0.0",
+    "description": "A browser extension for web developers during local development.",
     "permissions": [
         "storage",
         "activeTab"
     ],
     "host_permissions": [
-        "http://*/*",
-        "https://*/*"
+        "http://localhost/*",
+        "https://localhost/*",
+        "http://127.0.0.1/*",
+        "https://127.0.0.1/*"
     ],
     "content_scripts": [
         {
             "matches": [
-                "http://*/*",
-                "https://*/*"
+                "http://localhost/*",
+                "https://localhost/*",
+                "http://127.0.0.1/*",
+                "https://127.0.0.1/*",
+                "http://[::1]/*",
+                "https://[::1]/*"
             ],
             "run_at": "document_idle",
             "js": [
