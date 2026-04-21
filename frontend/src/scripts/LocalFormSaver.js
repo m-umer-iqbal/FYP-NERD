@@ -517,18 +517,52 @@
     }
 
     // ---------- INITIALIZATION ----------
+    // In scripts/LocalFormSaver.js, replace the init function:
+
     function init() {
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', init);
             return;
         }
 
-        if (isSignupPage()) {
-            setupSignupPage();
-        } else if (isSigninPage()) {
-            setupSigninPage();
-        }
+        // Check if user is signed in
+        chrome.storage.local.get(['nerd_auth_status'], (result) => {
+            const isSignedIn = result.nerd_auth_status === true;
+            if (!isSignedIn) {
+                // Not signed in – do nothing
+                return;
+            }
+
+            // Signed in – proceed with normal behavior
+            if (isSignupPage()) {
+                setupSignupPage();
+            } else if (isSigninPage()) {
+                setupSigninPage();
+            }
+        });
     }
 
     init();
+
+    // Add this inside the IIFE, after the init call
+    chrome.storage.onChanged.addListener((changes, areaName) => {
+        if (areaName === 'local' && changes.nerd_auth_status) {
+            const newValue = changes.nerd_auth_status.newValue;
+            if (!newValue) {
+                // User signed out – remove any UI elements we added
+                removeFloatingButton();
+                const modal = document.getElementById(MODAL_CONTAINER_ID);
+                if (modal) modal.remove();
+            } else {
+                // User signed in – re‑initialize (but avoid double injection)
+                if (!document.getElementById(BUTTON_ID)) {
+                    if (isSignupPage()) {
+                        setupSignupPage();
+                    } else if (isSigninPage()) {
+                        setupSigninPage();
+                    }
+                }
+            }
+        }
+    });
 })();

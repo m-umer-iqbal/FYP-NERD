@@ -74,6 +74,10 @@ function App() {
     setIsVisible(true);
   }, []);
 
+  useEffect(() => {
+    chrome.storage.local.set({ nerd_auth_status: isSignedIn });
+  }, [isSignedIn]);
+
   const handleSignIn = () => {
     if (!navigator.onLine) {
       alert("No internet connection. Please check your network and try again.");
