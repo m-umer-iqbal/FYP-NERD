@@ -42,6 +42,18 @@ function App() {
   };
 
   const handleBack = (data) => {
+    // Check if it's a DOM click event indicating the user clicked the Back button
+    if (data && (data.nativeEvent || data.type === 'click' || data.target)) {
+      if (selectedFeature?.id === 8) {
+        setSelectedFeature({ id: 7, collection: selectedFeature.collection });
+      } else if (selectedFeature?.id === 7) {
+        setSelectedFeature({ id: 3, name: "Local Form Saver" });
+      } else {
+        setSelectedFeature(null);
+      }
+      return;
+    }
+
     // If data is passed (from LocalFormSaver collection/form click), navigate to appropriate page
     if (data) {
       if (data.id === 7 && data.collection) {

@@ -256,7 +256,7 @@ function Form({ theme, form, collection, onBack }) {
                                 <div className="flex gap-2">
                                     <input
                                         type="text"
-                                        value={editValue}
+                                        value={typeof editValue === 'object' ? JSON.stringify(editValue) : editValue}
                                         onChange={(e) => setEditValue(e.target.value)}
                                         onBlur={saveEditField}
                                         onKeyDown={(e) => {
@@ -296,13 +296,13 @@ function Form({ theme, form, collection, onBack }) {
                                 </div>
                             ) : (
                                 <p
-                                    className="text-sm p-2 rounded-lg"
+                                    className="text-sm p-2 rounded-lg break-all"
                                     style={{
                                         color: accent,
                                         background: lightGray,
                                     }}
                                 >
-                                    {value || '(empty)'}
+                                    {typeof value === 'object' ? JSON.stringify(value) : (value || '(empty)')}
                                 </p>
                             )}
                         </div>
