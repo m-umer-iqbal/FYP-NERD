@@ -3,7 +3,9 @@ import { useClerk, useUser } from '@clerk/chrome-extension';
 import DecorativeCircle from './components/DecorativeCircle';
 import Navbar from './components/Navbar';
 import FeatureList from './components/FeatureList';
-import LocalFormSaver from './components/LocalFormSaver';
+import LocalFormSaver from './components/LocalFormSaver/LocalFormSaver';
+import CollectionDetail from './components/LocalFormSaver/CollectionDetail';
+import Form from './components/LocalFormSaver/Form';
 import ScreenSizeEmulator from './components/ScreenSizeEmulator';
 import DOMTree from './components/DOMTree';
 import StylePeek from './components/StylePeek';
@@ -39,8 +41,21 @@ function App() {
     setSelectedFeature(feature);
   };
 
-  const handleBack = () => {
-    setSelectedFeature(null);
+  const handleBack = (data) => {
+    // If data is passed (from LocalFormSaver collection/form click), navigate to appropriate page
+    if (data) {
+      if (data.id === 7 && data.collection) {
+        // Go to CollectionDetail
+        setSelectedFeature(data);
+      } else if (data.id === 8 && data.collection && data.form) {
+        // Go to Form
+        setSelectedFeature(data);
+      } else {
+        setSelectedFeature(null);
+      }
+    } else {
+      setSelectedFeature(null);
+    }
   };
 
   useEffect(() => {
@@ -96,11 +111,13 @@ function App() {
             {selectedFeature.id === 4 && <StylePeek theme={THEME} onBack={handleBack} />}
             {selectedFeature.id === 5 && <ShotStack theme={THEME} onBack={handleBack} />}
             {selectedFeature.id === 6 && <Translify theme={THEME} onBack={handleBack} />}
+            {selectedFeature.id === 7 && (<CollectionDetail theme={THEME} collection={selectedFeature.collection} onBack={handleBack} />)}
+            {selectedFeature.id === 8 && (<Form theme={THEME} form={selectedFeature.form} collection={selectedFeature.collection} onBack={handleBack} />)}
           </>
         ) : (
           <FeatureList features={features} onFeatureSelect={handleFeatureSelect} />
         )
-      ) : (
+      ) : (!isSignedIn &&
         <LoginPrompt />
       )}
 

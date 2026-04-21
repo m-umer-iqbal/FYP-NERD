@@ -172,7 +172,7 @@ function LocalFormSaver({ theme, onBack }) {
                 {collections.map((collection) => (
                     <div
                         key={collection.id}
-                        className="p-4 rounded-xl transition-all duration-300 relative"
+                        className="p-4 rounded-xl transition-all duration-300 relative cursor-pointer"
                         style={{
                             background: '#ffffff',
                             boxShadow: '0 4px 12px rgba(2, 26, 84, 0.1)',
