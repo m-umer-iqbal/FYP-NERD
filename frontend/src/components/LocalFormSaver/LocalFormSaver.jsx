@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast, { Toaster } from 'react-hot-toast';
 
 function LocalFormSaver({ theme, onBack }) {
     const { primary, accent, lightPink, lightGray } = theme;
@@ -8,7 +9,6 @@ function LocalFormSaver({ theme, onBack }) {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleteCollectionId, setDeleteCollectionId] = useState(null);
 
-    // Load collections from localStorage
     useEffect(() => {
         chrome.storage.local.get(['formSaver_collections'], (result) => {
             setCollections(result.formSaver_collections || []);
@@ -21,7 +21,6 @@ function LocalFormSaver({ theme, onBack }) {
         });
     };
 
-    // Add new collection
     const addCollection = () => {
         const newCollection = {
             id: Date.now(),
@@ -30,33 +29,31 @@ function LocalFormSaver({ theme, onBack }) {
             objects: []
         };
         saveCollections([...collections, newCollection]);
+        toast.success('Collection created');
     };
 
-    // Start renaming
     const startRename = (collection) => {
         setEditingId(collection.id);
         setEditName(collection.name);
     };
 
-    // Save renamed collection
     const saveRename = (id) => {
         if (editName.trim()) {
             const updatedCollections = collections.map(col =>
                 col.id === id ? { ...col, name: editName.trim() } : col
             );
             saveCollections(updatedCollections);
+            toast.success('Collection renamed');
         }
         setEditingId(null);
         setEditName('');
     };
 
-    // Cancel rename
     const cancelRename = () => {
         setEditingId(null);
         setEditName('');
     };
 
-    // Delete collection with confirmation
     const confirmDelete = (id) => {
         setDeleteCollectionId(id);
         setShowDeleteModal(true);
@@ -66,6 +63,7 @@ function LocalFormSaver({ theme, onBack }) {
         if (deleteCollectionId) {
             const updatedCollections = collections.filter(col => col.id !== deleteCollectionId);
             saveCollections(updatedCollections);
+            toast.success('Collection deleted');
         }
         setShowDeleteModal(false);
         setDeleteCollectionId(null);
@@ -92,27 +90,16 @@ function LocalFormSaver({ theme, onBack }) {
             {/* Header with Back Button on right */}
             <div className="flex justify-between items-start mb-4">
                 <div>
-                    {/* Main Heading - Feature Name */}
-                    <h1
-                        className="text-2xl font-bold"
-                        style={{ color: primary }}
-                    >
+                    <h1 className="text-2xl font-bold" style={{ color: primary }}>
                         Local Form Saver
                     </h1>
-
-                    {/* Subheading - Collection */}
-                    <h2
-                        className="text-xl font-semibold"
-                        style={{ color: accent }}
-                    >
+                    <h2 className="text-xl font-semibold" style={{ color: accent }}>
                         Collections
                     </h2>
                 </div>
-
-                {/* Back Button - positioned like logout button */}
                 <button
                     onClick={onBack}
-                    className="font-semibold text-xs flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300"
+                    className="font-semibold text-xs flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 cursor-pointer"
                     style={{
                         background: 'transparent',
                         border: `2px solid ${primary}`,
@@ -134,10 +121,15 @@ function LocalFormSaver({ theme, onBack }) {
                 </button>
             </div>
 
-            {/* Add Collection Button */}
+            {/* Collection Count – same style as form count */}
+            <p className="text-sm mb-3" style={{ color: accent }}>
+                {collections.length} {collections.length === 1 ? 'collection' : 'collections'} saved
+            </p>
+
+            {/* Add Collection Button – unchanged */}
             <button
                 onClick={addCollection}
-                className="flex items-center justify-center gap-2 mb-4 px-4 py-3 rounded-xl transition-all duration-300"
+                className="flex items-center justify-center gap-2 mb-4 px-4 py-3 rounded-xl transition-all duration-300 cursor-pointer"
                 style={{
                     background: '#ffffff',
                     border: `2px dashed ${primary}`,
@@ -172,13 +164,18 @@ function LocalFormSaver({ theme, onBack }) {
                 {collections.map((collection) => (
                     <div
                         key={collection.id}
-                        className="p-4 rounded-xl transition-all duration-300 relative cursor-pointer"
+                        className="p-4 rounded-xl transition-all duration-300 relative"
                         style={{
                             background: '#ffffff',
                             boxShadow: '0 4px 12px rgba(2, 26, 84, 0.1)',
                             border: `1px solid ${lightPink}`,
+                            cursor: editingId !== collection.id ? 'pointer' : 'default',
                         }}
-                        onClick={() => navigateToCollection(collection)}
+                        onClick={() => {
+                            if (editingId !== collection.id) {
+                                navigateToCollection(collection);
+                            }
+                        }}
                         onMouseEnter={(e) => {
                             e.currentTarget.style.boxShadow = `0 8px 20px rgba(2, 26, 84, 0.15)`;
                             e.currentTarget.style.transform = 'translateY(-2px)';
@@ -198,6 +195,7 @@ function LocalFormSaver({ theme, onBack }) {
                                     if (e.key === 'Enter') saveRename(collection.id);
                                     if (e.key === 'Escape') cancelRename();
                                 }}
+                                onClick={(e) => e.stopPropagation()}
                                 autoFocus
                                 className="w-full text-lg font-semibold mb-2 px-2 py-1 rounded border"
                                 style={{
@@ -208,30 +206,28 @@ function LocalFormSaver({ theme, onBack }) {
                             />
                         ) : (
                             <h3
-                                className="text-lg font-semibold mb-2"
+                                className="text-lg font-semibold mb-2 cursor-default"
                                 style={{ color: primary }}
-                                onClick={() => startRename(collection)}
+                                title="Click to edit"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    startRename(collection);
+                                }}
                             >
                                 {collection.name}
                             </h3>
                         )}
-                        <p
-                            className="text-sm"
-                            style={{ color: accent }}
-                        >
-                            {collection.forms || 0} forms saved
+                        <p className="text-sm" style={{ color: accent }}>
+                            {collection.forms || 0} {collection.forms === 1 ? 'form' : 'forms'} saved
                         </p>
 
-                        {/* Delete Button */}
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 confirmDelete(collection.id);
                             }}
-                            className="absolute bottom-2 right-2 p-1 rounded-full transition-all duration-300"
-                            style={{
-                                background: 'transparent',
-                            }}
+                            className="absolute bottom-2 right-2 p-1 rounded-full transition-all duration-300 cursor-pointer"
+                            style={{ background: 'transparent' }}
                             title="Delete Collection"
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.background = '#ffcccc';
@@ -248,25 +244,25 @@ function LocalFormSaver({ theme, onBack }) {
                 ))}
             </div>
 
-            {/* Custom Scrollbar Styling - Only for collections */}
+            {/* Custom Scrollbar Styling */}
             <style>{`
-        .collections-scroll::-webkit-scrollbar {
-          width: 8px;
-        }
-        .collections-scroll::-webkit-scrollbar-track {
-          background: ${lightGray};
-          border-radius: 4px;
-        }
-        .collections-scroll::-webkit-scrollbar-thumb {
-          background: ${accent};
-          border-radius: 4px;
-        }
-        .collections-scroll::-webkit-scrollbar-thumb:hover {
-          background: ${primary};
-        }
-      `}</style>
+                .collections-scroll::-webkit-scrollbar {
+                    width: 8px;
+                }
+                .collections-scroll::-webkit-scrollbar-track {
+                    background: ${lightGray};
+                    border-radius: 4px;
+                }
+                .collections-scroll::-webkit-scrollbar-thumb {
+                    background: ${accent};
+                    border-radius: 4px;
+                }
+                .collections-scroll::-webkit-scrollbar-thumb:hover {
+                    background: ${primary};
+                }
+            `}</style>
 
-            {/* Custom Delete Confirmation Modal */}
+            {/* Delete Confirmation Modal */}
             {showDeleteModal && (
                 <div
                     className="fixed inset-0 flex items-center justify-center z-50"
@@ -278,22 +274,16 @@ function LocalFormSaver({ theme, onBack }) {
                         style={{ backgroundColor: '#ffffff', minWidth: '300px' }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <h3
-                            className="text-xl font-bold mb-4"
-                            style={{ color: primary }}
-                        >
+                        <h3 className="text-xl font-bold mb-4" style={{ color: primary }}>
                             Delete Collection
                         </h3>
-                        <p
-                            className="mb-6"
-                            style={{ color: primary }}
-                        >
+                        <p className="mb-6" style={{ color: primary }}>
                             Are you sure you want to delete "{collections.find(c => c.id === deleteCollectionId)?.name}"?
                         </p>
                         <div className="flex justify-end gap-3">
                             <button
                                 onClick={handleDeleteCancel}
-                                className="px-4 py-2 rounded-lg transition-all duration-300"
+                                className="px-4 py-2 rounded-lg transition-all duration-300 cursor-pointer"
                                 style={{
                                     background: 'transparent',
                                     border: `2px solid ${primary}`,
@@ -310,7 +300,7 @@ function LocalFormSaver({ theme, onBack }) {
                             </button>
                             <button
                                 onClick={handleDeleteConfirm}
-                                className="px-4 py-2 rounded-lg transition-all duration-300"
+                                className="px-4 py-2 rounded-lg transition-all duration-300 cursor-pointer"
                                 style={{
                                     background: '#dc3545',
                                     border: 'none',
@@ -329,6 +319,43 @@ function LocalFormSaver({ theme, onBack }) {
                     </div>
                 </div>
             )}
+
+            <Toaster
+                position="top-center"
+                toastOptions={{
+                    duration: 2000,
+                    style: {
+                        background: primary,
+                        color: '#fff',
+                        borderRadius: '8px',
+                    },
+                }}
+            />
+            {/* Toast Notifications */}
+            {/* <Toaster
+                position="top-center"
+                toastOptions={{
+                    duration: 2000,
+                    success: {
+                        style: {
+                            background: primary,
+                            color: '#ffffff',
+                            borderLeft: `4px solid ${accent}`,
+                            borderRadius: '8px',
+                            boxShadow: '0 4px 12px rgba(2, 26, 84, 0.15)',
+                        },
+                        iconTheme: {
+                            primary: accent,
+                            secondary: '#ffffff',
+                        },
+                    },
+                    style: {
+                        background: primary,
+                        color: '#ffffff',
+                        borderRadius: '8px',
+                    },
+                }}
+            /> */}
         </div>
     );
 }
