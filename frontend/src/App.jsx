@@ -25,7 +25,7 @@ const THEME = {
 function App() {
   const [isVisible, setIsVisible] = useState(false);
   const [selectedFeature, setSelectedFeature] = useState(null);
-  const { isSignedIn, user } = useUser();
+  const { isLoaded, isSignedIn, user } = useUser();
   const clerk = useClerk();
 
   const features = [
@@ -118,7 +118,12 @@ function App() {
         />
       )}
 
-      {isSignedIn ? (
+      {!isLoaded ? (
+        // Loading state – you can show a simple spinner or nothing
+        <div className="flex items-center justify-center h-full py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" style={{ borderColor: THEME.primary }}></div>
+        </div>
+      ) : isSignedIn ? (
         selectedFeature ? (
           <>
             {selectedFeature.id === 1 && <ScreenSizeEmulator theme={THEME} onBack={handleBack} />}
@@ -133,7 +138,7 @@ function App() {
         ) : (
           <FeatureList features={features} onFeatureSelect={handleFeatureSelect} />
         )
-      ) : (!isSignedIn &&
+      ) : (
         <LoginPrompt />
       )}
 
