@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import toast, { Toaster } from 'react-hot-toast';
 
 function Form({ theme, form, collection, onBack }) {
     const { primary, accent, lightPink, lightGray } = theme;
     const [formData, setFormData] = useState(form?.data || {});
-    const [editMode, setEditMode] = useState(false);
-    const [editField, setEditField] = useState(null);
+    const [editingFieldKey, setEditingFieldKey] = useState(null);
+    const [newFieldKey, setNewFieldKey] = useState('');
+    const [editFieldValue, setEditFieldValue] = useState(null);
     const [editValue, setEditValue] = useState('');
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteFieldKey, setDeleteFieldKey] = useState(null);
 
     // Format date
     const formatDate = (dateString) => {
@@ -43,45 +47,95 @@ function Form({ theme, form, collection, onBack }) {
     };
 
     // Update field value
-    const updateField = (key, value) => {
+    const updateFieldValue = (key, value) => {
         const newData = { ...formData, [key]: value };
         saveFormData(newData);
+        toast.success('Field updated');
     };
 
-    // Start editing a field
-    const startEditField = (key, value) => {
-        setEditField(key);
+    // Rename field key
+    const renameFieldKey = (oldKey, newKey) => {
+        if (oldKey === newKey || !newKey.trim()) {
+            setEditingFieldKey(null);
+            return;
+        }
+        const newData = {};
+        Object.keys(formData).forEach(key => {
+            if (key === oldKey) {
+                newData[newKey.trim()] = formData[oldKey];
+            } else {
+                newData[key] = formData[key];
+            }
+        });
+        saveFormData(newData);
+        toast.success('Field renamed');
+        setEditingFieldKey(null);
+    };
+
+    // Start editing field value
+    const startEditValue = (key, value) => {
+        setEditFieldValue(key);
         setEditValue(value || '');
     };
 
-    // Save edited field
-    const saveEditField = () => {
-        if (editField) {
-            updateField(editField, editValue);
-            setEditField(null);
+    // Save edited field value
+    const saveEditValue = () => {
+        if (editFieldValue) {
+            updateFieldValue(editFieldValue, editValue);
+            setEditFieldValue(null);
             setEditValue('');
         }
     };
 
-    // Cancel editing
-    const cancelEditField = () => {
-        setEditField(null);
+    // Cancel editing value
+    const cancelEditValue = () => {
+        setEditFieldValue(null);
         setEditValue('');
     };
 
-    // Add new field
     const addNewField = () => {
-        const fieldName = prompt('Enter field name:');
-        if (fieldName && fieldName.trim()) {
-            updateField(fieldName.trim(), '');
+        // Generate a default name like "New Field" (or "New Field 2", "New Field 3", ...)
+        let baseName = 'New Field';
+        let newName = baseName;
+        let counter = 1;
+        while (formData.hasOwnProperty(newName)) {
+            counter++;
+            newName = `${baseName} ${counter}`;
         }
+        const newData = { ...formData, [newName]: '' };
+        saveFormData(newData);
+        toast.success('Field added');
     };
 
     // Delete a field
     const deleteField = (key) => {
-        const newData = { ...formData };
-        delete newData[key];
-        saveFormData(newData);
+        if (window.confirm(`Delete field "${key}"?`)) {
+            const newData = { ...formData };
+            delete newData[key];
+            saveFormData(newData);
+            toast.success('Field deleted');
+        }
+    };
+
+    const confirmDelete = (key) => {
+        setDeleteFieldKey(key);
+        setShowDeleteModal(true);
+    };
+
+    const handleDeleteConfirm = () => {
+        if (deleteFieldKey) {
+            const newData = { ...formData };
+            delete newData[deleteFieldKey];
+            saveFormData(newData);
+            toast.success('Field deleted');
+        }
+        setShowDeleteModal(false);
+        setDeleteFieldKey(null);
+    };
+
+    const handleDeleteCancel = () => {
+        setShowDeleteModal(false);
+        setDeleteFieldKey(null);
     };
 
     return (
@@ -93,30 +147,19 @@ function Form({ theme, form, collection, onBack }) {
                 overflow: 'hidden',
             }}
         >
-            {/* Header with Back Button on right */}
+            {/* Header with Back Button */}
             <div className="flex justify-between items-start mb-4">
                 <div>
-                    {/* Main Heading - Form Name */}
-                    <h1
-                        className="text-2xl font-bold"
-                        style={{ color: primary }}
-                    >
+                    <h1 className="text-2xl font-bold" style={{ color: primary }}>
                         {form?.name || 'Form'}
                     </h1>
-
-                    {/* Subheading - Collection Name */}
-                    <h2
-                        className="text-xl font-semibold"
-                        style={{ color: accent }}
-                    >
+                    <h2 className="text-xl font-semibold" style={{ color: accent }}>
                         {collection?.name || 'Collection'}
                     </h2>
                 </div>
-
-                {/* Back Button - positioned like logout button */}
                 <button
                     onClick={onBack}
-                    className="font-semibold text-xs flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300"
+                    className="font-semibold text-xs flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 cursor-pointer"
                     style={{
                         background: 'transparent',
                         border: `2px solid ${primary}`,
@@ -148,10 +191,10 @@ function Form({ theme, form, collection, onBack }) {
                 </p>
             </div>
 
-            {/* Add Field Button */}
+            {/* Add Field Button (matching Add Collection/Form style) */}
             <button
                 onClick={addNewField}
-                className="flex items-center justify-center gap-2 mb-4 px-4 py-3 rounded-xl transition-all duration-300"
+                className="flex items-center justify-center gap-2 mb-4 px-4 py-3 rounded-xl transition-all duration-300 cursor-pointer w-full"
                 style={{
                     background: '#ffffff',
                     border: `2px dashed ${primary}`,
@@ -175,15 +218,10 @@ function Form({ theme, form, collection, onBack }) {
             {/* Form Fields - Scrollable list */}
             <div
                 className="overflow-y-auto form-fields-scroll flex-1"
-                style={{
-                    paddingRight: '8px',
-                }}
+                style={{ paddingRight: '8px' }}
             >
                 {Object.keys(formData).length === 0 ? (
-                    <div
-                        className="flex flex-col items-center justify-center py-12"
-                        style={{ color: accent }}
-                    >
+                    <div className="flex flex-col items-center justify-center py-12" style={{ color: accent }}>
                         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mb-4 opacity-50">
                             <path d="M3 3H21V21H3V3ZM5 5V19H19V5H5ZM7 7H17V9H7V7ZM7 11H17V13H7V11ZM7 15H13V17H7V15Z" fill="currentColor" />
                         </svg>
@@ -201,23 +239,47 @@ function Form({ theme, form, collection, onBack }) {
                                 border: `1px solid ${lightPink}`,
                             }}
                         >
-                            {/* Field Name */}
+                            {/* Field Name - editable inline */}
                             <div className="flex justify-between items-start mb-2">
-                                <h3
-                                    className="text-lg font-semibold"
-                                    style={{ color: primary }}
-                                >
-                                    {key}
-                                </h3>
-                                <div className="flex gap-2">
-                                    {/* Edit Button */}
-                                    <button
-                                        onClick={() => startEditField(key, value)}
-                                        className="p-1 rounded-full transition-all duration-300"
-                                        style={{
-                                            background: 'transparent',
+                                {editingFieldKey === key ? (
+                                    <input
+                                        type="text"
+                                        value={newFieldKey}
+                                        onChange={(e) => setNewFieldKey(e.target.value)}
+                                        onBlur={() => renameFieldKey(key, newFieldKey)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') renameFieldKey(key, newFieldKey);
+                                            if (e.key === 'Escape') setEditingFieldKey(null);
                                         }}
-                                        title="Edit Field"
+                                        autoFocus
+                                        className="text-lg font-semibold px-2 py-1 rounded border"
+                                        style={{
+                                            color: primary,
+                                            borderColor: accent,
+                                            outline: 'none',
+                                            width: 'auto',
+                                        }}
+                                    />
+                                ) : (
+                                    <h3
+                                        className="text-lg font-semibold cursor-default"
+                                        style={{ color: primary }}
+                                        title="Click to rename field"
+                                        onClick={() => {
+                                            setEditingFieldKey(key);
+                                            setNewFieldKey(key);
+                                        }}
+                                    >
+                                        {key}
+                                    </h3>
+                                )}
+                                <div className="flex gap-2">
+                                    {/* Edit Value Button */}
+                                    <button
+                                        onClick={() => startEditValue(key, value)}
+                                        className="p-1 rounded-full transition-all duration-300 cursor-pointer"
+                                        style={{ background: 'transparent' }}
+                                        title="Edit value"
                                         onMouseEnter={(e) => {
                                             e.currentTarget.style.background = lightPink;
                                         }}
@@ -229,14 +291,12 @@ function Form({ theme, form, collection, onBack }) {
                                             <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill={primary} />
                                         </svg>
                                     </button>
-                                    {/* Delete Button */}
+                                    {/* Delete Field Button */}
                                     <button
-                                        onClick={() => deleteField(key)}
-                                        className="p-1 rounded-full transition-all duration-300"
-                                        style={{
-                                            background: 'transparent',
-                                        }}
-                                        title="Delete Field"
+                                        onClick={() => confirmDelete(key)}
+                                        className="p-1 rounded-full transition-all duration-300 cursor-pointer"
+                                        style={{ background: 'transparent' }}
+                                        title="Delete field"
                                         onMouseEnter={(e) => {
                                             e.currentTarget.style.background = '#ffcccc';
                                         }}
@@ -252,16 +312,16 @@ function Form({ theme, form, collection, onBack }) {
                             </div>
 
                             {/* Field Value - Editable */}
-                            {editField === key ? (
+                            {editFieldValue === key ? (
                                 <div className="flex gap-2">
                                     <input
                                         type="text"
-                                        value={typeof editValue === 'object' ? JSON.stringify(editValue) : editValue}
+                                        value={editValue}
                                         onChange={(e) => setEditValue(e.target.value)}
-                                        onBlur={saveEditField}
+                                        onBlur={saveEditValue}
                                         onKeyDown={(e) => {
-                                            if (e.key === 'Enter') saveEditField();
-                                            if (e.key === 'Escape') cancelEditField();
+                                            if (e.key === 'Enter') saveEditValue();
+                                            if (e.key === 'Escape') cancelEditValue();
                                         }}
                                         autoFocus
                                         className="flex-1 px-3 py-2 rounded-lg border"
@@ -273,8 +333,8 @@ function Form({ theme, form, collection, onBack }) {
                                         }}
                                     />
                                     <button
-                                        onClick={saveEditField}
-                                        className="px-3 py-2 rounded-lg transition-all duration-300"
+                                        onClick={saveEditValue}
+                                        className="px-3 py-2 rounded-lg transition-all duration-300 cursor-pointer"
                                         style={{
                                             background: primary,
                                             color: '#ffffff',
@@ -283,8 +343,8 @@ function Form({ theme, form, collection, onBack }) {
                                         Save
                                     </button>
                                     <button
-                                        onClick={cancelEditField}
-                                        className="px-3 py-2 rounded-lg transition-all duration-300"
+                                        onClick={cancelEditValue}
+                                        className="px-3 py-2 rounded-lg transition-all duration-300 cursor-pointer"
                                         style={{
                                             background: 'transparent',
                                             border: `2px solid ${primary}`,
@@ -310,23 +370,107 @@ function Form({ theme, form, collection, onBack }) {
                 )}
             </div>
 
-            {/* Custom Scrollbar Styling */}
+            {/* Scrollbar Styles */}
             <style>{`
-        .form-fields-scroll::-webkit-scrollbar {
-          width: 8px;
-        }
-        .form-fields-scroll::-webkit-scrollbar-track {
-          background: ${lightGray};
-          border-radius: 4px;
-        }
-        .form-fields-scroll::-webkit-scrollbar-thumb {
-          background: ${accent};
-          border-radius: 4px;
-        }
-        .form-fields-scroll::-webkit-scrollbar-thumb:hover {
-          background: ${primary};
-        }
-      `}</style>
+                .form-fields-scroll::-webkit-scrollbar {
+                    width: 8px;
+                }
+                .form-fields-scroll::-webkit-scrollbar-track {
+                    background: ${lightGray};
+                    border-radius: 4px;
+                }
+                .form-fields-scroll::-webkit-scrollbar-thumb {
+                    background: ${accent};
+                    border-radius: 4px;
+                }
+                .form-fields-scroll::-webkit-scrollbar-thumb:hover {
+                    background: ${primary};
+                }
+            `}</style>
+
+            {/* Delete Field Confirmation Modal */}
+            {showDeleteModal && (
+                <div
+                    className="fixed inset-0 flex items-center justify-center z-50"
+                    style={{ backgroundColor: 'rgba(2, 26, 84, 0.5)' }}
+                    onClick={handleDeleteCancel}
+                >
+                    <div
+                        className="p-6 rounded-xl shadow-lg"
+                        style={{ backgroundColor: '#ffffff', minWidth: '300px' }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <h3 className="text-xl font-bold mb-4" style={{ color: primary }}>
+                            Delete Field
+                        </h3>
+                        <p className="mb-6" style={{ color: primary }}>
+                            Are you sure you want to delete field "{deleteFieldKey}"?
+                        </p>
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={handleDeleteCancel}
+                                className="px-4 py-2 rounded-lg transition-all duration-300 cursor-pointer"
+                                style={{
+                                    background: 'transparent',
+                                    border: `2px solid ${primary}`,
+                                    color: primary,
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = lightPink;
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'transparent';
+                                }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleDeleteConfirm}
+                                className="px-4 py-2 rounded-lg transition-all duration-300 cursor-pointer"
+                                style={{
+                                    background: '#dc3545',
+                                    border: 'none',
+                                    color: '#ffffff',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = '#c82333';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = '#dc3545';
+                                }}
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Toast Notifications */}
+            <Toaster
+                position="top-center"
+                toastOptions={{
+                    duration: 2000,
+                    success: {
+                        style: {
+                            background: primary,
+                            color: '#ffffff',
+                            borderLeft: `4px solid ${accent}`,
+                            borderRadius: '8px',
+                            boxShadow: '0 4px 12px rgba(2, 26, 84, 0.15)',
+                        },
+                        iconTheme: {
+                            primary: accent,
+                            secondary: '#ffffff',
+                        },
+                    },
+                    style: {
+                        background: primary,
+                        color: '#ffffff',
+                        borderRadius: '8px',
+                    },
+                }}
+            />
         </div>
     );
 }
