@@ -29,9 +29,9 @@ function App() {
   const clerk = useClerk();
 
   const features = [
-    { id: 1, name: "Screen Size Emulator" },
+    { id: 1, name: "Local Form Saver" },
     { id: 2, name: "DOM Tree" },
-    { id: 3, name: "Local Form Saver" },
+    { id: 3, name: "Screen Size Emulator" },
     { id: 4, name: "StylePeek" },
     { id: 5, name: "ShotStack" },
     { id: 6, name: "Translify" },
@@ -47,7 +47,7 @@ function App() {
       if (selectedFeature?.id === 8) {
         setSelectedFeature({ id: 7, collection: selectedFeature.collection });
       } else if (selectedFeature?.id === 7) {
-        setSelectedFeature({ id: 3, name: "Local Form Saver" });
+        setSelectedFeature({ id: 1, name: "Local Form Saver" });
       } else {
         setSelectedFeature(null);
       }
@@ -126,9 +126,9 @@ function App() {
       ) : isSignedIn ? (
         selectedFeature ? (
           <>
-            {selectedFeature.id === 1 && <ScreenSizeEmulator theme={THEME} onBack={handleBack} />}
+            {selectedFeature.id === 1 && <LocalFormSaver theme={THEME} onBack={handleBack} />}
             {selectedFeature.id === 2 && <DOMTree theme={THEME} onBack={handleBack} />}
-            {selectedFeature.id === 3 && <LocalFormSaver theme={THEME} onBack={handleBack} />}
+            {selectedFeature.id === 3 && <ScreenSizeEmulator theme={THEME} onBack={handleBack} />}
             {selectedFeature.id === 4 && <StylePeek theme={THEME} onBack={handleBack} />}
             {selectedFeature.id === 5 && <ShotStack theme={THEME} onBack={handleBack} />}
             {selectedFeature.id === 6 && <Translify theme={THEME} onBack={handleBack} />}
