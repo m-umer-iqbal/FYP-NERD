@@ -25,7 +25,8 @@
             ],
             "run_at": "document_idle",
             "js": [
-                "./src/scripts/LocalFormSaver.js"
+                "./src/scripts/LocalFormSaver.js",
+                "./src/scripts/DOMTree.js"
             ]
         }
     ],
