@@ -446,27 +446,13 @@ function Form({ theme, form, collection, onBack }) {
                 </div>
             )}
 
-            {/* Toast Notifications */}
             <Toaster
                 position="top-center"
                 toastOptions={{
                     duration: 2000,
-                    success: {
-                        style: {
-                            background: primary,
-                            color: '#ffffff',
-                            borderLeft: `4px solid ${accent}`,
-                            borderRadius: '8px',
-                            boxShadow: '0 4px 12px rgba(2, 26, 84, 0.15)',
-                        },
-                        iconTheme: {
-                            primary: accent,
-                            secondary: '#ffffff',
-                        },
-                    },
                     style: {
                         background: primary,
-                        color: '#ffffff',
+                        color: '#fff',
                         borderRadius: '8px',
                     },
                 }}
