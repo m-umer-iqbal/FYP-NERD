@@ -7,10 +7,10 @@ import LocalFormSaver from './components/LocalFormSaver/LocalFormSaver';
 import CollectionDetail from './components/LocalFormSaver/CollectionDetail';
 import Form from './components/LocalFormSaver/Form';
 import ScreenSizeEmulator from './components/ScreenSizeEmulator';
-import DOMTree from './components/DOMTree/DOMTree/DOMTree';
+import DOMTree from './components/DOMTree/DOMTree';
 import StylePeek from './components/StylePeek';
 import ShotStack from './components/ShotStack';
-import Translify from './components/Translify';
+import Translify from './components/Translify/Translify';
 import LoginPrompt from './components/LoginPrompt';
 import Footer from './components/Footer';
 
@@ -31,10 +31,10 @@ function App() {
   const features = [
     { id: 1, name: "Local Form Saver" },
     { id: 2, name: "DOM Tree" },
-    { id: 3, name: "Screen Size Emulator" },
-    { id: 4, name: "StylePeek" },
-    { id: 5, name: "ShotStack" },
-    { id: 6, name: "Translify" },
+    { id: 3, name: "Translify" },
+    { id: 4, name: "Screen Size Emulator" },
+    { id: 5, name: "Chatbot" },
+    { id: 6, name: "Smart Screenshot Collector" },
   ];
 
   const handleFeatureSelect = (feature) => {
@@ -128,10 +128,10 @@ function App() {
           <>
             {selectedFeature.id === 1 && <LocalFormSaver theme={THEME} onBack={handleBack} />}
             {selectedFeature.id === 2 && <DOMTree theme={THEME} onBack={handleBack} />}
-            {selectedFeature.id === 3 && <ScreenSizeEmulator theme={THEME} onBack={handleBack} />}
-            {selectedFeature.id === 4 && <StylePeek theme={THEME} onBack={handleBack} />}
-            {selectedFeature.id === 5 && <ShotStack theme={THEME} onBack={handleBack} />}
-            {selectedFeature.id === 6 && <Translify theme={THEME} onBack={handleBack} />}
+            {selectedFeature.id === 3 && <Translify theme={THEME} onBack={handleBack} />}
+            {selectedFeature.id === 4 && <ScreenSizeEmulator theme={THEME} onBack={handleBack} />}
+            {selectedFeature.id === 5 && <StylePeek theme={THEME} onBack={handleBack} />}
+            {selectedFeature.id === 6 && <ShotStack theme={THEME} onBack={handleBack} />}
             {selectedFeature.id === 7 && (<CollectionDetail theme={THEME} collection={selectedFeature.collection} onBack={handleBack} />)}
             {selectedFeature.id === 8 && (<Form theme={THEME} form={selectedFeature.form} collection={selectedFeature.collection} onBack={handleBack} />)}
           </>

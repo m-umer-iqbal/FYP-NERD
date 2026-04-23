@@ -26,7 +26,8 @@
             "run_at": "document_idle",
             "js": [
                 "./src/scripts/LocalFormSaver.js",
-                "./src/scripts/DOMTree.js"
+                "./src/scripts/DOMTree.js",
+                "./src/scripts/Translify.js"
             ]
         }
     ],
