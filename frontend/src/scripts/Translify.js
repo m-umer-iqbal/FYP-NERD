@@ -1,4 +1,4 @@
-// content.js – Translify Translation Engine
+// Translify Translation Engine
 
 // Store original text for each translated node
 const originalTexts = new Map();
@@ -44,13 +44,13 @@ async function translatePage(targetLang) {
                 // Reject if inside <script>, <style>, <noscript>, or hidden element
                 const parent = node.parentElement;
                 if (!parent) return NodeFilter.FILTER_REJECT;
-                if (parent.closest('script, style, noscript, [data-no-translate]')) 
+                if (parent.closest('script, style, noscript, [data-no-translate]'))
                     return NodeFilter.FILTER_REJECT;
                 // Reject empty or whitespace-only text
                 if (!node.textContent.trim()) return NodeFilter.FILTER_REJECT;
                 // Reject hidden elements (display:none, visibility:hidden)
                 const style = window.getComputedStyle(parent);
-                if (style.display === 'none' || style.visibility === 'hidden') 
+                if (style.display === 'none' || style.visibility === 'hidden')
                     return NodeFilter.FILTER_REJECT;
                 return NodeFilter.FILTER_ACCEPT;
             }
