@@ -7,7 +7,7 @@ import LocalFormSaver from './components/LocalFormSaver/LocalFormSaver';
 import CollectionDetail from './components/LocalFormSaver/CollectionDetail';
 import Form from './components/LocalFormSaver/Form';
 import ScreenSizeEmulator from './components/ScreenSizeEmulator';
-import DOMTree from './components/DOMTree';
+import DOMTree from './components/DOMTree/DOMTree';
 import StylePeek from './components/StylePeek';
 import ShotStack from './components/ShotStack';
 import Translify from './components/Translify';
