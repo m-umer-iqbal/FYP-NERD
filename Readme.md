@@ -1,4 +1,4 @@
-# Frontend + Backend of NERD
+# NERD
 
 ## How to start the project
 (In Terminal, run the following command)
@@ -12,8 +12,6 @@ git clone https://github.com/m-umer-iqbal/FYP-NERD.git
 2. Install dependencies for both frontend and backend 
 
 ```bash
-cd backend
-npm install
 cd ../frontend
 npm install
 ```
@@ -32,11 +30,9 @@ ALSO YOU CAN DO THIS (optional)
 
 ## Project Structure
 - `frontend/`: Contains the React + Tailwind frontend code.
-- `backend/`: Contains the Node.js backend code.
 
 ## Technologies Used
-- Frontend: React, Tailwind CSS
-- Backend: Node.js, Express
+- Frontend: React, Tailwind CSS, Manifest V3, Vite
 
 ## Contributing
 Contributions are welcome! Please fork the repository and create a pull request with your changes.
