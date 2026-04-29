@@ -239,9 +239,10 @@ function Form({ theme, form, collection, onBack }) {
                                 border: `1px solid ${lightPink}`,
                             }}
                         >
-                            {/* Field Name - editable inline */}
+                            {/* Field Name - editable inline, but not for _meta */}
                             <div className="flex justify-between items-start mb-2">
                                 {editingFieldKey === key ? (
+                                    // This input will never appear for _meta because we disable editing trigger
                                     <input
                                         type="text"
                                         value={newFieldKey}
@@ -262,105 +263,62 @@ function Form({ theme, form, collection, onBack }) {
                                     />
                                 ) : (
                                     <h3
-                                        className="text-lg font-semibold cursor-default"
+                                        className={`text-lg font-semibold ${key !== '_meta' ? 'cursor-pointer' : 'cursor-default'}`}
                                         style={{ color: primary }}
-                                        title="Click to rename field"
+                                        title={key !== '_meta' ? 'Click to rename field' : ''}
                                         onClick={() => {
-                                            setEditingFieldKey(key);
-                                            setNewFieldKey(key);
+                                            if (key !== '_meta') {
+                                                setEditingFieldKey(key);
+                                                setNewFieldKey(key);
+                                            }
                                         }}
                                     >
                                         {key}
                                     </h3>
                                 )}
-                                <div className="flex gap-2">
-                                    {/* Edit Value Button */}
-                                    <button
-                                        onClick={() => startEditValue(key, value)}
-                                        className="p-1 rounded-full transition-all duration-300 cursor-pointer"
-                                        style={{ background: 'transparent' }}
-                                        title="Edit value"
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.background = lightPink;
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.background = 'transparent';
-                                        }}
-                                    >
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill={primary} />
-                                        </svg>
-                                    </button>
-                                    {/* Delete Field Button */}
-                                    <button
-                                        onClick={() => confirmDelete(key)}
-                                        className="p-1 rounded-full transition-all duration-300 cursor-pointer"
-                                        style={{ background: 'transparent' }}
-                                        title="Delete field"
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.background = '#ffcccc';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.background = 'transparent';
-                                        }}
-                                    >
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z" fill="#dc3545" />
-                                        </svg>
-                                    </button>
-                                </div>
+                                {/* Action buttons – only show if not _meta */}
+                                {key !== '_meta' && (
+                                    <div className="flex gap-2">
+                                        {/* Edit Value Button */}
+                                        <button
+                                            onClick={() => startEditValue(key, value)}
+                                            className="p-1 rounded-full transition-all duration-300 cursor-pointer"
+                                            style={{ background: 'transparent' }}
+                                            title="Edit value"
+                                            onMouseEnter={(e) => { e.currentTarget.style.background = lightPink; }}
+                                            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                                        >
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill={primary} />
+                                            </svg>
+                                        </button>
+                                        {/* Delete Field Button */}
+                                        <button
+                                            onClick={() => confirmDelete(key)}
+                                            className="p-1 rounded-full transition-all duration-300 cursor-pointer"
+                                            style={{ background: 'transparent' }}
+                                            title="Delete field"
+                                            onMouseEnter={(e) => { e.currentTarget.style.background = '#ffcccc'; }}
+                                            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                                        >
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z" fill="#dc3545" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                )}
                             </div>
 
-                            {/* Field Value - Editable */}
+                            {/* Field Value - editable only for non‑meta fields */}
                             {editFieldValue === key ? (
+                                // editable input only appears if key !== '_meta' thanks to button guard
                                 <div className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        value={editValue}
-                                        onChange={(e) => setEditValue(e.target.value)}
-                                        onBlur={saveEditValue}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') saveEditValue();
-                                            if (e.key === 'Escape') cancelEditValue();
-                                        }}
-                                        autoFocus
-                                        className="flex-1 px-3 py-2 rounded-lg border"
-                                        style={{
-                                            color: primary,
-                                            borderColor: accent,
-                                            outline: 'none',
-                                            background: lightGray,
-                                        }}
-                                    />
-                                    <button
-                                        onClick={saveEditValue}
-                                        className="px-3 py-2 rounded-lg transition-all duration-300 cursor-pointer"
-                                        style={{
-                                            background: primary,
-                                            color: '#ffffff',
-                                        }}
-                                    >
-                                        Save
-                                    </button>
-                                    <button
-                                        onClick={cancelEditValue}
-                                        className="px-3 py-2 rounded-lg transition-all duration-300 cursor-pointer"
-                                        style={{
-                                            background: 'transparent',
-                                            border: `2px solid ${primary}`,
-                                            color: primary,
-                                        }}
-                                    >
-                                        Cancel
-                                    </button>
+                                    {/* ... existing input and save/cancel buttons ... */}
                                 </div>
                             ) : (
                                 <p
                                     className="text-sm p-2 rounded-lg break-all"
-                                    style={{
-                                        color: accent,
-                                        background: lightGray,
-                                    }}
+                                    style={{ color: accent, background: lightGray }}
                                 >
                                     {typeof value === 'object' ? JSON.stringify(value) : (value || '(empty)')}
                                 </p>

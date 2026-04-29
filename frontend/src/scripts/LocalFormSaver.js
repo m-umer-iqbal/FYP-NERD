@@ -12,13 +12,14 @@
 
     // Theme colors
     const COLORS = {
-        primary: '#021A54',      // Deep navy
-        accent: '#FF85BB',       // Soft pink
-        lightPink: '#FFCEE3',    // Light pink background
-        lightGray: '#F5F5F5'     // Off-white
+        primary: '#021A54',
+        accent: '#FF85BB',
+        lightPink: '#FFCEE3',
+        lightGray: '#F5F5F5'
     };
 
     // ---------- CHROME STORAGE HELPERS (Promise‑based) ----------
+    // (All storage functions remain unchanged – they only deal with form data)
     function getCollections() {
         return new Promise((resolve) => {
             chrome.storage.local.get([STORAGE_KEY], (result) => {
@@ -74,7 +75,7 @@
                 data: data,
                 savedAt: new Date().toISOString()
             });
-            collection.forms = collection.objects.length; // correct count
+            collection.forms = collection.objects.length;
             await saveCollections(collections);
         }
     }
@@ -299,7 +300,6 @@
                 selectEl.innerHTML = updatedCollections.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
                 selectEl.value = newCollection.id;
             } else {
-                // No collections before, now we have one – re-render the whole modal
                 renderSaveModal(modal, updatedCollections, formData, onConfirm, onCancel);
             }
             newNameInput.value = '';
@@ -383,7 +383,7 @@
         };
 
         collectionSelect.addEventListener('change', updateObjectSelect);
-        updateObjectSelect(); // initial load
+        updateObjectSelect();
 
         cancelBtn.addEventListener('click', () => {
             modal.parentElement.remove();
@@ -516,53 +516,19 @@
         }, false);
     }
 
-    // ---------- INITIALIZATION ----------
-    // In scripts/LocalFormSaver.js, replace the init function:
-
+    // ---------- INITIALIZATION (NO AUTH CHECK) ----------
     function init() {
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', init);
             return;
         }
 
-        // Check if user is signed in
-        chrome.storage.local.get(['nerd_auth_status'], (result) => {
-            const isSignedIn = result.nerd_auth_status === true;
-            if (!isSignedIn) {
-                // Not signed in – do nothing
-                return;
-            }
-
-            // Signed in – proceed with normal behavior
-            if (isSignupPage()) {
-                setupSignupPage();
-            } else if (isSigninPage()) {
-                setupSigninPage();
-            }
-        });
+        if (isSignupPage()) {
+            setupSignupPage();
+        } else if (isSigninPage()) {
+            setupSigninPage();
+        }
     }
 
     init();
-
-    // Add this inside the IIFE, after the init call
-    chrome.storage.onChanged.addListener((changes, areaName) => {
-        if (areaName === 'local' && changes.nerd_auth_status) {
-            const newValue = changes.nerd_auth_status.newValue;
-            if (!newValue) {
-                // User signed out – remove any UI elements we added
-                removeFloatingButton();
-                const modal = document.getElementById(MODAL_CONTAINER_ID);
-                if (modal) modal.remove();
-            } else {
-                // User signed in – re‑initialize (but avoid double injection)
-                if (!document.getElementById(BUTTON_ID)) {
-                    if (isSignupPage()) {
-                        setupSignupPage();
-                    } else if (isSigninPage()) {
-                        setupSigninPage();
-                    }
-                }
-            }
-        }
-    });
 })();
