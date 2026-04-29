@@ -5,13 +5,16 @@
     "description": "A browser extension for web developers during local development.",
     "permissions": [
         "storage",
-        "activeTab"
+        "activeTab",
+        "scripting"
     ],
     "host_permissions": [
         "http://localhost/*",
         "https://localhost/*",
         "http://127.0.0.1/*",
-        "https://127.0.0.1/*"
+        "https://127.0.0.1/*",
+        "http://[::1]/*",
+        "https://[::1]/*"
     ],
     "content_scripts": [
         {
@@ -25,9 +28,21 @@
             ],
             "run_at": "document_idle",
             "js": [
-                "./src/scripts/LocalFormSaver.js",
-                "./src/scripts/DOMTree.js",
-                "./src/scripts/Translify.js"
+                "./src/scripts/LocalFormSaver.js"
+            ]
+        },
+        {
+            "matches": [
+                "http://localhost/*",
+                "https://localhost/*",
+                "http://127.0.0.1/*",
+                "https://127.0.0.1/*",
+                "http://[::1]/*",
+                "https://[::1]/*"
+            ],
+            "run_at": "document_end",
+            "js": [
+                "./src/scripts/WebsiteAuditor.js"
             ]
         }
     ],

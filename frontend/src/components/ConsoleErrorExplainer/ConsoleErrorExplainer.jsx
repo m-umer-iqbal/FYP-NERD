@@ -1,6 +1,6 @@
 import React from 'react';
 
-function ShotStack({ theme, onBack }) {
+function ConsoleErrorExplainer({ theme, onBack }) {
     const { primary, accent, lightPink, lightGray } = theme;
 
     return (
@@ -19,7 +19,7 @@ function ShotStack({ theme, onBack }) {
                         className="text-2xl font-bold"
                         style={{ color: primary }}
                     >
-                        ShotStack
+                        Console Error Explainer
                     </h1>
                 </div>
 
@@ -55,4 +55,4 @@ function ShotStack({ theme, onBack }) {
     );
 }
 
-export default ShotStack;
+export default ConsoleErrorExplainer;

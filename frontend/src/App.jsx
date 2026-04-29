@@ -1,20 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { useClerk, useUser } from '@clerk/chrome-extension';
 import DecorativeCircle from './components/DecorativeCircle';
 import Navbar from './components/Navbar';
 import FeatureList from './components/FeatureList';
+import DOMTree from './components/DOMTree/DOMTree';
+import Footer from './components/Footer';
 import LocalFormSaver from './components/LocalFormSaver/LocalFormSaver';
 import CollectionDetail from './components/LocalFormSaver/CollectionDetail';
 import Form from './components/LocalFormSaver/Form';
-import ScreenSizeEmulator from './components/ScreenSizeEmulator';
-import DOMTree from './components/DOMTree/DOMTree';
-import StylePeek from './components/StylePeek';
-import ShotStack from './components/ShotStack';
+import WebsiteAuditor from './components/WebsiteAuditor/WebsiteAuditor';
+import ConsoleErrorExplainer from "./components/ConsoleErrorExplainer/ConsoleErrorExplainer";
 import Translify from './components/Translify/Translify';
-import LoginPrompt from './components/LoginPrompt';
-import Footer from './components/Footer';
+import ScreenSizeEmulator from './components/ScreenSizeEmulator';
 
-// Theme colors from App.jsx
 const THEME = {
   primary: '#021A54',
   accent: '#FF85BB',
@@ -25,16 +22,14 @@ const THEME = {
 function App() {
   const [isVisible, setIsVisible] = useState(false);
   const [selectedFeature, setSelectedFeature] = useState(null);
-  const { isLoaded, isSignedIn, user } = useUser();
-  const clerk = useClerk();
 
   const features = [
     { id: 1, name: "Local Form Saver" },
-    { id: 2, name: "DOM Tree" },
-    { id: 3, name: "Translify" },
-    { id: 4, name: "Screen Size Emulator" },
-    { id: 5, name: "Chatbot" },
-    { id: 6, name: "Smart Screenshot Collector" },
+    { id: 2, name: "Website Auditor" },
+    { id: 3, name: "Console Error Explainer" },
+    // { id: 4, name: "DOM Tree" },
+    // { id: 5, name: "Translify" },
+    // { id: 6, name: "Screen Size Emulator" },
   ];
 
   const handleFeatureSelect = (feature) => {
@@ -42,7 +37,6 @@ function App() {
   };
 
   const handleBack = (data) => {
-    // Check if it's a DOM click event indicating the user clicked the Back button
     if (data && (data.nativeEvent || data.type === 'click' || data.target)) {
       if (selectedFeature?.id === 8) {
         setSelectedFeature({ id: 7, collection: selectedFeature.collection });
@@ -54,13 +48,10 @@ function App() {
       return;
     }
 
-    // If data is passed (from LocalFormSaver collection/form click), navigate to appropriate page
     if (data) {
       if (data.id === 7 && data.collection) {
-        // Go to CollectionDetail
         setSelectedFeature(data);
       } else if (data.id === 8 && data.collection && data.form) {
-        // Go to Form
         setSelectedFeature(data);
       } else {
         setSelectedFeature(null);
@@ -74,72 +65,36 @@ function App() {
     setIsVisible(true);
   }, []);
 
-  useEffect(() => {
-    chrome.storage.local.set({ nerd_auth_status: isSignedIn });
-  }, [isSignedIn]);
-
-  const handleSignIn = () => {
-    if (!navigator.onLine) {
-      alert("No internet connection. Please check your network and try again.");
-      return;
-    }
-    clerk.openSignIn();
-  };
-
-  const handleSignOut = () => {
-    clerk.signOut();
-  };
-
   const isFeaturePage = selectedFeature !== null;
 
   return (
     <div
       className={`
-    w-100 p-6 border-0 box-border flex flex-col 
-    bg-[#f5f5f5] transition-all duration-500 ease-out
-    ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
-    ${isSignedIn ? "h-135" : "h-131.25"}
-  `}
+        w-100 p-6 border-0 box-border flex flex-col 
+        bg-[#f5f5f5] transition-all duration-500 ease-out
+        ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
+      `}
       style={{
         background: "linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%)",
         boxShadow: "0 20px 35px -10px rgba(2, 26, 84, 0.2)",
         overflow: 'hidden',
-        height: isSignedIn ? (isFeaturePage ? '560px' : '540px') : '525px',
+        height: isFeaturePage ? '560px' : '355px',
       }}
     >
       <DecorativeCircle />
 
-      {!isFeaturePage && (
-        <Navbar
-          isSignedIn={isSignedIn}
-          user={user}
-          onSignIn={handleSignIn}
-          onSignOut={handleSignOut}
-        />
-      )}
+      {!isFeaturePage && <Navbar />}
 
-      {!isLoaded ? (
-        // Loading state – you can show a simple spinner or nothing
-        <div className="flex items-center justify-center h-full py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" style={{ borderColor: THEME.primary }}></div>
-        </div>
-      ) : isSignedIn ? (
-        selectedFeature ? (
-          <>
-            {selectedFeature.id === 1 && <LocalFormSaver theme={THEME} onBack={handleBack} />}
-            {selectedFeature.id === 2 && <DOMTree theme={THEME} onBack={handleBack} />}
-            {selectedFeature.id === 3 && <Translify theme={THEME} onBack={handleBack} />}
-            {selectedFeature.id === 4 && <ScreenSizeEmulator theme={THEME} onBack={handleBack} />}
-            {selectedFeature.id === 5 && <StylePeek theme={THEME} onBack={handleBack} />}
-            {selectedFeature.id === 6 && <ShotStack theme={THEME} onBack={handleBack} />}
-            {selectedFeature.id === 7 && (<CollectionDetail theme={THEME} collection={selectedFeature.collection} onBack={handleBack} />)}
-            {selectedFeature.id === 8 && (<Form theme={THEME} form={selectedFeature.form} collection={selectedFeature.collection} onBack={handleBack} />)}
-          </>
-        ) : (
-          <FeatureList features={features} onFeatureSelect={handleFeatureSelect} />
-        )
+      {selectedFeature ? (
+        <>
+          {selectedFeature.id === 1 && <LocalFormSaver theme={THEME} onBack={handleBack} />}
+          {selectedFeature.id === 2 && <WebsiteAuditor theme={THEME} onBack={handleBack} />}
+          {selectedFeature.id === 3 && <ConsoleErrorExplainer theme={THEME} onBack={handleBack} />}
+          {selectedFeature.id === 7 && <CollectionDetail theme={THEME} collection={selectedFeature.collection} onBack={handleBack} />}
+          {selectedFeature.id === 8 && <Form theme={THEME} form={selectedFeature.form} collection={selectedFeature.collection} onBack={handleBack} />}
+        </>
       ) : (
-        <LoginPrompt />
+        <FeatureList features={features} onFeatureSelect={handleFeatureSelect} />
       )}
 
       {!isFeaturePage && <Footer />}

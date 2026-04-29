@@ -1,8 +1,8 @@
 import React from 'react';
 
-function Navbar({ isSignedIn, user, onSignIn, onSignOut }) {
+function Navbar() {
   return (
-    <div className={isSignedIn ? "flex justify-between items-center pb-4 relative z-10" : "flex justify-between items-center pb-8 relative z-10"}>
+    <div className="flex justify-between items-center pb-8 relative z-10 cursor-default">
       <div>
         <div className="relative">
           <h1
@@ -25,72 +25,21 @@ function Navbar({ isSignedIn, user, onSignIn, onSignOut }) {
             }}
           />
         </div>
-
-        {isSignedIn && (
-          <div className="mt-2">
-            <p
-              className="text-xs font-semibold truncate max-w-45"
-              style={{
-                color: "#021a54",
-                opacity: 0.9,
-                letterSpacing: "0.3px"
-              }}
-            >
-              {user?.primaryEmailAddress?.emailAddress}
-            </p>
-          </div>
-        )}
       </div>
-
-      {!isSignedIn ? (
-        <button
-          onClick={onSignIn}
-          className="cursor-pointer px-4 py-2 font-semibold text-xs uppercase tracking-wider transition-all duration-300"
-          style={{
-            background: "transparent",
-            border: "2px solid #021a54",
-            color: "#021a54",
-            borderRadius: "8px",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "#ff85bb";
-            e.currentTarget.style.borderColor = "#ff85bb";
-            e.currentTarget.style.color = "#021a54";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "transparent";
-            e.currentTarget.style.borderColor = "#021a54";
-            e.currentTarget.style.color = "#021a54";
-          }}
-        >
-          Login
-        </button>
-      ) : (
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onSignOut}
-            className="cursor-pointer px-4 py-2 font-semibold text-xs uppercase tracking-wider transition-all duration-300"
-            style={{
-              background: "transparent",
-              border: "2px solid #021a54",
-              color: "#021a54",
-              borderRadius: "8px",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "#ff85bb";
-              e.currentTarget.style.borderColor = "#ff85bb";
-              e.currentTarget.style.color = "#021a54";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "transparent";
-              e.currentTarget.style.borderColor = "#021a54";
-              e.currentTarget.style.color = "#021a54";
-            }}
-          >
-            Log Out
-          </button>
-        </div>
-      )}
+      <span
+        className="px-3 py-1 text-[10px] font-extrabold uppercase tracking-widest rounded-full"
+        style={{
+          background: '#FF85BB',
+          color: '#021A54',
+          boxShadow: '0 4px 12px rgba(255,133,187,0.4), 0 1px 3px rgba(2,26,84,0.1)',
+          border: '1px solid rgba(255,205,227,0.6)',
+          letterSpacing: '1px',
+          transform: 'scale(1)',
+          transition: 'transform 0.2s ease',
+        }}
+      >
+        v 6.0.0
+      </span>
     </div>
   );
 }
