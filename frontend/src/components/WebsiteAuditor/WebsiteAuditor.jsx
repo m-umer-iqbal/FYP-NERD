@@ -74,7 +74,7 @@ const WebsiteAuditor = ({ theme = {}, onBack }) => {
             try {
                 // Send message to content script
                 const response = await chrome.tabs.sendMessage(tab.id, {
-                    action: 'runSmartAnalysis'
+                    action: 'runWebsiteAuditor'
                 });
 
                 if (response && response.success) {
@@ -178,10 +178,10 @@ const WebsiteAuditor = ({ theme = {}, onBack }) => {
             <div className="flex justify-between items-start mb-3">
                 <div>
                     <h1 className="text-2xl font-bold" style={{ color: primary }}>
-                        Smart Analyzer
+                        Website Auditor
                     </h1>
                     <h2 className="text-xl font-semibold" style={{ color: accent }}>
-                        Website Audit
+                        Smart Analysis
                     </h2>
                 </div>
                 <button
