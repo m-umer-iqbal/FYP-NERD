@@ -15,6 +15,38 @@
     return false;
   }
 
+  // ---------- Element Highlighting ----------
+  let currentHighlightedElement = null;
+
+  function highlightElement(selector) {
+    // Remove previous highlight
+    if (currentHighlightedElement) {
+      currentHighlightedElement.style.outline =
+        currentHighlightedElement.dataset.nerdOriginalOutline || '';
+      delete currentHighlightedElement.dataset.nerdOriginalOutline;
+      currentHighlightedElement = null;
+    }
+
+    if (!selector) return;
+    const el = document.querySelector(selector);
+    if (el) {
+      el.dataset.nerdOriginalOutline = el.style.outline;
+      el.style.outline = '2px dashed #f472b6';
+      currentHighlightedElement = el;
+    }
+  }
+
+  function unhighlightElement(selector) {
+    if (currentHighlightedElement) {
+      const el = document.querySelector(selector);
+      if (el === currentHighlightedElement) {
+        el.style.outline = el.dataset.nerdOriginalOutline || '';
+        delete el.dataset.nerdOriginalOutline;
+        currentHighlightedElement = null;
+      }
+    }
+  }
+
   /**
    * Gets CSS selector for element (improved)
    */
@@ -158,6 +190,131 @@
   }
 
   /**
+ * Convert RGB to HSL (returns h:0-360, s:0-1, l:0-1)
+ */
+  function rgbToHsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+    if (max === min) {
+      h = s = 0;
+    } else {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+        case g: h = ((b - r) / d + 2) / 6; break;
+        case b: h = ((r - g) / d + 4) / 6; break;
+      }
+    }
+    return [h * 360, s, l];
+  }
+
+  /**
+   * Convert HSL back to RGB (returns [r,g,b] 0-255)
+   */
+  function hslToRgb2(h, s, l) {
+    h /= 360;
+    let r, g, b;
+    if (s === 0) {
+      r = g = b = l;
+    } else {
+      const hue2rgb = (p, q, t) => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1 / 6) return p + (q - p) * 6 * t;
+        if (t < 1 / 2) return q;
+        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+        return p;
+      };
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      r = hue2rgb(p, q, h + 1 / 3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1 / 3);
+    }
+    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+  }
+
+  /**
+   * Find a text colour that meets the required contrast ratio on the given background.
+   * Tries to keep the original hue, adjusting lightness only.
+   * Returns a hex string (e.g. "#2a2a2a").
+   */
+  function getAccessibleTextColor(bg, currentTextRgb, isLargeText) {
+    const requiredRatio = isLargeText ? 3 : 4.5;
+    const bgLuminance = getLuminance(bg[0], bg[1], bg[2]);
+
+    // Convert current text to HSL
+    const [h, s] = rgbToHsl(currentTextRgb[0], currentTextRgb[1], currentTextRgb[2]);
+
+    // Decide direction: if background is dark, we need lighter text; if light, darker text.
+    const bgIsLight = bgLuminance > 0.5;
+
+    // Binary search on lightness to meet ratio
+    let lo = bgIsLight ? 0 : 0.5, hi = bgIsLight ? 0.5 : 1;
+    let bestL = bgIsLight ? 0 : 1; // fallback
+    let found = false;
+    for (let i = 0; i < 20; i++) {
+      const mid = (lo + hi) / 2;
+      const testRgb = hslToRgb2(h, s, mid);
+      const testLum = getLuminance(testRgb[0], testRgb[1], testRgb[2]);
+      let ratio;
+      if (bgIsLight) {
+        ratio = (bgLuminance + 0.05) / (testLum + 0.05);
+      } else {
+        ratio = (testLum + 0.05) / (bgLuminance + 0.05);
+      }
+      if (ratio >= requiredRatio) {
+        bestL = mid;
+        found = true;
+        if (bgIsLight) lo = mid; // need even darker? no, we just need at least this, but we can try to get closer to original lightness if possible
+        else hi = mid;
+        // Actually we want the closest to the original lightness still meeting ratio.
+        // We'll record the best and continue to see if we can get closer to original L.
+        if (bgIsLight) lo = mid + 0.001; // try darker
+        else hi = mid - 0.001; // try lighter
+      } else {
+        if (bgIsLight) hi = mid;
+        else lo = mid;
+      }
+    }
+    if (!found) {
+      // Fallback: pure black or white
+      return bgIsLight ? '#000000' : '#ffffff';
+    }
+
+    // Now bestL is the closest to the original but still meeting requirement? Not necessarily.
+    // We'll do a second pass to find the lightness that is closest to originalL while still meeting ratio.
+    const originalL = rgbToHsl(currentTextRgb[0], currentTextRgb[1], currentTextRgb[2])[2];
+
+    // Optimisation: search the whole range and pick the one with minimum difference in L
+    let bestDiff = Infinity;
+    let finalL = bestL;
+    for (let l = 0; l <= 1; l += 0.01) {
+      const testRgb = hslToRgb2(h, s, l);
+      const testLum = getLuminance(testRgb[0], testRgb[1], testRgb[2]);
+      let ratio;
+      if (bgIsLight) {
+        ratio = (bgLuminance + 0.05) / (testLum + 0.05);
+      } else {
+        ratio = (testLum + 0.05) / (bgLuminance + 0.05);
+      }
+      if (ratio >= requiredRatio) {
+        const diff = Math.abs(l - originalL);
+        if (diff < bestDiff) {
+          bestDiff = diff;
+          finalL = l;
+        }
+      }
+    }
+
+    const finalRgb = hslToRgb2(h, s, finalL);
+    const toHex = (n) => n.toString(16).padStart(2, '0');
+    return `#${toHex(finalRgb[0])}${toHex(finalRgb[1])}${toHex(finalRgb[2])}`;
+  }
+
+  /**
    * IMPROVED: Get effective background color with better fallback
    */
   function getEffectiveBackground(element) {
@@ -202,11 +359,9 @@
       const src = img.currentSrc || img.src;
       if (!src) continue;
 
-      // Normalize URL for comparison
       const normalizedSrc = normalizeUrl(src);
       if (!normalizedSrc) continue;
 
-      // Find resource entry with better matching
       const entry = resources.find(r => {
         const normalizedResource = normalizeUrl(r.name);
         return normalizedResource === normalizedSrc && r.initiatorType === 'img';
@@ -220,30 +375,43 @@
       const sizeMB = sizeBytes / (1024 * 1024);
       if (sizeMB < 0.2) continue; // under 200KB, ignore
 
-      // FIXED: Remove query parameters before checking format
-      const format = src.split('?')[0].split('.').pop().toLowerCase();
-      const modernFormats = ['webp', 'avif', 'svg'];
-      const needsModernFormat = !modernFormats.includes(format);
+      const srcClean = src.split('?')[0];        // no query params
+      const ext = srcClean.split('.').pop().toLowerCase();
+      const modernFormat = ext === 'webp' || ext === 'avif' || ext === 'svg';
 
-      const suggestion = [
-        needsModernFormat ? `Convert to WebP/AVIF format.` : '',
-        sizeMB > 0.5 ? `Compress image below 200KB (currently ${sizeMB.toFixed(1)}MB).` : '',
-        img.loading !== 'lazy' ? 'Add loading="lazy" for lazy loading.' : ''
-      ].filter(Boolean).join(' ');
+      // If the image is a modern format, only suggest compression
+      let formatSuggestion = '';
+      let recommendedExt = ext;
+      if (!modernFormat) {
+        recommendedExt = 'webp';   // widely supported, smaller
+        formatSuggestion = `Convert from .${ext} to .${recommendedExt} (typically 25–35% smaller). `;
+      }
+
+      const targetKB = 200;
+      const neededReduction = ((sizeKB - targetKB) / sizeKB * 100).toFixed(0);
+      const compressSuggestion = sizeMB > 0.5 ?
+        `Compress from ${(sizeBytes / 1024).toFixed(0)} KB to under ${targetKB} KB (reduce by ~${neededReduction}%). ` : '';
+
+      const lazySuggestion = img.loading !== 'lazy' ? 'Add loading="lazy" for lazy loading. ' : '';
+
+      const suggestion = (formatSuggestion + compressSuggestion + lazySuggestion).trim();
+
+      const codeFixSrc = srcClean.replace(/\.[^.]+$/, `.${recommendedExt}`);
+      const codeFix = `<img src="${codeFixSrc}" alt="..." loading="lazy" />`;
 
       issues.push({
         id: crypto.randomUUID(),
         category: 'performance',
         type: 'large-image',
         title: 'Large Image Detected',
-        description: `${src.split('/').pop()} is ${sizeMB.toFixed(1)}MB`,
+        description: `${src.split('/').pop()} is ${sizeMB.toFixed(1)} MB`,
         location: {
           file: window.location.href,
           line: 'N/A',
           element: getSelector(img)
         },
-        suggestion: suggestion || 'Optimize image size and format.',
-        codeFix: `<img src="image.webp" alt="..." loading="lazy" />`,
+        suggestion: suggestion || 'Optimise image size and format.',
+        codeFix: codeFix,
         impact: {
           performance: sizeMB > 1 ? 'high' : 'medium',
           accessibility: 'low',
@@ -276,30 +444,39 @@
 
       const duration = entry.responseEnd - entry.startTime;
       const sizeKB = (entry.transferSize || entry.encodedBodySize || 0) / 1024;
-
-      // FIXED: Module scripts are async by default
       const isAsync = script.async || script.defer || script.type === 'module';
       const isBlocking = !isAsync && script.src;
 
       if (duration > 300 || sizeKB > 100 || isBlocking) {
-        const suggestion = [];
-        if (isBlocking) suggestion.push('Add `defer` or `async` attribute to avoid blocking rendering.');
-        if (duration > 300) suggestion.push(`Script took ${duration.toFixed(0)}ms to load – consider code splitting or lazy loading.`);
-        if (sizeKB > 100) suggestion.push(`Script is large (${Math.round(sizeKB)}KB). Use dynamic imports or code splitting.`);
+        const suggestionParts = [];
+
+        if (isBlocking) {
+          suggestionParts.push('Add `defer` (or `async` if order doesn’t matter) to stop blocking render.');
+        }
+        if (duration > 300) {
+          suggestionParts.push(`Load time is ${duration.toFixed(0)} ms – consider lazy‑loading this script or splitting it.`);
+        }
+        if (sizeKB > 100) {
+          suggestionParts.push(`File size is ${Math.round(sizeKB)} KB. Try to keep it under 100 KB; use code‑splitting or dynamic imports.`);
+        }
+
+        const suggestion = suggestionParts.join(' ');
+
+        const codeFix = `<script src="${src.split('/').pop()}" defer></script>`;
 
         issues.push({
           id: crypto.randomUUID(),
           category: 'performance',
           type: 'slow-script',
           title: 'Slow / Blocking Script',
-          description: `${src.split('/').pop()} is ${isBlocking ? 'render‑blocking' : 'slow'} (${duration.toFixed(0)}ms, ${Math.round(sizeKB)}KB)`,
+          description: `${src.split('/').pop()} is ${isBlocking ? 'render‑blocking' : 'slow'} (${duration.toFixed(0)} ms, ${Math.round(sizeKB)} KB)`,
           location: {
             file: window.location.href,
             line: 'N/A',
             element: getSelector(script)
           },
-          suggestion: suggestion.join(' '),
-          codeFix: `<script src="${src.split('/').pop()}" defer></script>`,
+          suggestion,
+          codeFix,
           impact: {
             performance: (duration > 500 || sizeKB > 200) ? 'high' : 'medium',
             accessibility: 'none',
@@ -316,6 +493,8 @@
     const imgs = document.querySelectorAll('img');
     for (const img of imgs) {
       if (!img.hasAttribute('alt') || img.getAttribute('alt').trim() === '') {
+        const src = img.currentSrc || img.src;
+        const filename = src ? src.split('/').pop() : 'image';
         issues.push({
           id: crypto.randomUUID(),
           category: 'accessibility',
@@ -328,7 +507,7 @@
             element: getSelector(img)
           },
           suggestion: 'Add a descriptive alt text for screen readers and SEO.',
-          codeFix: `<img src="..." alt="Descriptive text">`,
+          codeFix: `<img src="${filename}" alt="Descriptive text">`,
           impact: {
             performance: 'none',
             accessibility: 'high',
@@ -350,11 +529,9 @@
     const seen = new Set();
 
     for (const el of textElements) {
-      // FIXED: Check full text content, not just first child node
       const text = el.textContent?.trim();
       if (!text || text.length < 2) continue;
 
-      // Avoid analyzing same element twice
       const elKey = el.toString();
       if (seen.has(elKey)) continue;
       seen.add(elKey);
@@ -363,7 +540,6 @@
         const style = window.getComputedStyle(el);
         const textColor = parseColor(style.color);
         const bgColor = getEffectiveBackground(el);
-
         if (!textColor || !bgColor) continue;
 
         const ratio = getContrastRatio(textColor, bgColor);
@@ -371,19 +547,23 @@
         const threshold = isLarge ? 3 : 4.5;
 
         if (ratio < threshold) {
+          // Compute a proper accessible text colour
+          const accessibleColor = getAccessibleTextColor(bgColor, textColor, isLarge);
+          const ratioWouldBe = getContrastRatio(parseColor(accessibleColor), bgColor);
+
           issues.push({
             id: crypto.randomUUID(),
             category: 'accessibility',
             type: 'low-contrast',
             title: 'Low Color Contrast',
-            description: `Contrast ratio ${ratio.toFixed(1)}:1 (minimum ${threshold}:1)`,
+            description: `Contrast ratio ${ratio.toFixed(1)}:1 (minimum ${threshold}:1). Text: ${style.color}, Background: ${window.getComputedStyle(getEffectiveBackgroundElement(el)).backgroundColor}`,
             location: {
               file: window.location.href,
               line: 'N/A',
               element: getSelector(el)
             },
-            suggestion: `Use darker text or lighter background. Current: ${style.color} on background.`,
-            codeFix: `color: #333333; /* or adjust background */`,
+            suggestion: `Change text colour to ${accessibleColor} – this will give a ratio of ${ratioWouldBe.toFixed(1)}:1 and keep the same hue.`,
+            codeFix: `color: ${accessibleColor}; /* was ${style.color} */`,
             impact: {
               performance: 'none',
               accessibility: 'high',
@@ -396,6 +576,19 @@
       }
     }
     return issues;
+  }
+
+  // Helper: get the actual DOM element used for background calculation (needed for style string in description)
+  function getEffectiveBackgroundElement(element) {
+    let el = element;
+    while (el) {
+      const bg = window.getComputedStyle(el).backgroundColor;
+      if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') {
+        return el;
+      }
+      el = el.parentElement;
+    }
+    return document.body;
   }
 
   /**
@@ -566,8 +759,21 @@
       }).catch(err => {
         sendResponse({ success: false, error: err.message });
       });
-      return true; // indicates async response
+      return true; // async response
     }
+
+    if (message.action === 'highlightElement') {
+      highlightElement(message.selector);
+      sendResponse({ success: true });
+      return false; // synchronous
+    }
+
+    if (message.action === 'unhighlightElement') {
+      unhighlightElement(message.selector);
+      sendResponse({ success: true });
+      return false;
+    }
+
     return false;
   });
 

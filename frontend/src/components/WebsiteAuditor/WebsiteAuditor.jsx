@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 
 const WebsiteAuditor = ({ theme = {}, onBack }) => {
-    // FIXED: Add default theme values with fallback
     const {
         primary = '#021a54',
         accent = '#f472b6',
@@ -15,10 +14,8 @@ const WebsiteAuditor = ({ theme = {}, onBack }) => {
     const [activeCategory, setActiveCategory] = useState('all');
     const [expandedIssue, setExpandedIssue] = useState(null);
     const [errorDetails, setErrorDetails] = useState(null);
+    const activeTabId = useRef(null);
 
-    /**
-     * IMPROVED: Check if tab is analyzable
-     */
     const isTabAnalyzable = async (tab) => {
         if (!tab.url) {
             return { analyzable: false, reason: 'Tab URL is not available' };
@@ -47,15 +44,13 @@ const WebsiteAuditor = ({ theme = {}, onBack }) => {
         return { analyzable: true };
     };
 
-    /**
-     * IMPROVED: Run analysis with better error handling
-     */
     const runAnalysis = async () => {
         setIsAnalyzing(true);
         setErrorDetails(null);
 
         try {
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            activeTabId.current = tab.id;   // store for hover actions
 
             if (!tab) {
                 toast.error('No active tab found');
@@ -121,7 +116,6 @@ const WebsiteAuditor = ({ theme = {}, onBack }) => {
         [issues, activeCategory]
     );
 
-    // FIXED: Memoize counts calculation
     const counts = useMemo(() =>
         issues.reduce((acc, issue) => {
             acc[issue.category] = (acc[issue.category] || 0) + 1;
@@ -132,9 +126,9 @@ const WebsiteAuditor = ({ theme = {}, onBack }) => {
 
     const getCategoryColor = (category) => {
         switch (category) {
-            case 'performance': return '#fbbf24'; // amber
-            case 'accessibility': return '#34d399'; // emerald
-            case 'code-quality': return '#60a5fa'; // blue
+            case 'performance': return '#fbbf24';
+            case 'accessibility': return '#34d399';
+            case 'code-quality': return '#60a5fa';
             default: return accent;
         }
     };
@@ -165,6 +159,52 @@ const WebsiteAuditor = ({ theme = {}, onBack }) => {
         setExpandedIssue(expandedIssue === id ? null : id);
     };
 
+    const IconLocation = () => (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+        </svg>
+    );
+
+    const IconSuggestion = () => (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 18h6"></path>
+            <path d="M10 22h4"></path>
+            <path d="M12 2a7 7 0 0 0-7 7c0 2.4.8 4.5 2 6.2V20h10v-4.8c1.2-1.7 2-3.8 2-6.2a7 7 0 0 0-7-7z"></path>
+        </svg>
+    );
+
+    const IconCodeFix = () => (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+        </svg>
+    );
+
+    const IconImpact = () => (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 20V10"></path>
+            <path d="M12 20V4"></path>
+            <path d="M6 20v-6"></path>
+        </svg>
+    );
+
+    const IconPerformance = () => (
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4 14h5l-1 8 9-12h-5l1-8z" /></svg>
+    );
+
+    const IconAccessibility = () => (
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm8 7h-2.74c.42 1.05.67 2.17.74 3.35L18 14l-1.53-2.21c-.38.67-.82 1.3-1.31 1.88L17 18h-2l-1-3.25h-.5L12 18h-2l1.84-4.33A9.001 9.001 0 0 1 10.53 11.8L9 14l.01-1.65C9.54 11.36 10.22 10.45 11 9.61V9H5V7h6V5.5l1-1 1 1V7h6v2z" />
+        </svg>
+    );
+
+    const IconSEO = () => (
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+    );
+
     return (
         <div
             className="flex flex-col"
@@ -174,7 +214,7 @@ const WebsiteAuditor = ({ theme = {}, onBack }) => {
                 overflow: 'hidden',
             }}
         >
-            {/* Header */}
+            {/* Header unchanged */}
             <div className="flex justify-between items-start mb-3">
                 <div>
                     <h1 className="text-2xl font-bold" style={{ color: primary }}>
@@ -292,7 +332,14 @@ const WebsiteAuditor = ({ theme = {}, onBack }) => {
                         border: `1px solid #fecaca`
                     }}
                 >
-                    <p className="font-semibold mb-1">⚠️ Error Details:</p>
+                    <p className="font-semibold mb-1">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline mr-1">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        Error Details:
+                    </p>
                     <p>{errorDetails}</p>
                 </div>
             )}
@@ -345,7 +392,7 @@ const WebsiteAuditor = ({ theme = {}, onBack }) => {
                                             {issue.title}
                                         </span>
                                         <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full"
-                                            style={{ background: lightPink, color: accent }}>
+                                            style={{ background: lightPink, color: primary }}>
                                             {issue.category.replace('-', ' ')}
                                         </span>
                                     </div>
@@ -373,18 +420,39 @@ const WebsiteAuditor = ({ theme = {}, onBack }) => {
                                 >
                                     {/* Location */}
                                     <div className="mt-3">
-                                        <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: accent }}>
-                                            📍 Location
+                                        <p className="flex text-[10px] font-bold uppercase tracking-wider" style={{ color: accent }}>
+                                            <IconLocation />
+                                            <span className="ml-1">Location</span>
                                         </p>
-                                        <p className="text-xs font-mono mt-1 break-all" style={{ color: primary }}>
+                                        <p
+                                            className="text-xs font-mono mt-1 break-all cursor-pointer"
+                                            style={{ color: primary }}
+                                            onMouseEnter={() => {
+                                                if (activeTabId.current && issue.location.element) {
+                                                    chrome.tabs.sendMessage(activeTabId.current, {
+                                                        action: 'highlightElement',
+                                                        selector: issue.location.element
+                                                    }).catch(() => { }); // ignore disconnection errors
+                                                }
+                                            }}
+                                            onMouseLeave={() => {
+                                                if (activeTabId.current && issue.location.element) {
+                                                    chrome.tabs.sendMessage(activeTabId.current, {
+                                                        action: 'unhighlightElement',
+                                                        selector: issue.location.element
+                                                    }).catch(() => { });
+                                                }
+                                            }}
+                                        >
                                             {issue.location.element}
                                         </p>
                                     </div>
 
                                     {/* Suggestion */}
                                     <div className="mt-3">
-                                        <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: accent }}>
-                                            💡 Suggestion
+                                        <p className="flex text-[10px] font-bold uppercase tracking-wider" style={{ color: accent }}>
+                                            <IconSuggestion />
+                                            <span className="ml-1">Suggestion</span>
                                         </p>
                                         <p className="text-xs mt-1" style={{ color: primary }}>
                                             {issue.suggestion}
@@ -393,8 +461,9 @@ const WebsiteAuditor = ({ theme = {}, onBack }) => {
 
                                     {/* Code Fix */}
                                     <div className="mt-3">
-                                        <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: accent }}>
-                                            🔧 Code Fix
+                                        <p className="flex text-[10px] font-bold uppercase tracking-wider" style={{ color: accent }}>
+                                            <IconCodeFix />
+                                            <span className="ml-1">Code Fix</span>
                                         </p>
                                         <pre className="text-xs mt-1 p-2 rounded-lg overflow-x-auto" style={{
                                             background: lightGray,
@@ -407,22 +476,29 @@ const WebsiteAuditor = ({ theme = {}, onBack }) => {
 
                                     {/* Impact */}
                                     <div className="mt-3 flex items-center gap-2 flex-wrap">
-                                        <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: accent }}>
-                                            📊 Impact
+                                        <p className="text-[10px] font-bold uppercase tracking-wider flex items-center" style={{ color: accent }}>
+                                            <IconImpact />
+                                            <span className="ml-1">Impact</span>
                                         </p>
                                         {issue.impact.performance && issue.impact.performance !== 'none' && (
                                             <div className="flex items-center gap-1 text-[10px] font-bold" style={{ color: primary }}>
-                                                ⚡ Perf {getImpactBadge(issue.impact.performance)}
+                                                <IconPerformance />
+                                                <span>Perf</span>
+                                                {getImpactBadge(issue.impact.performance)}
                                             </div>
                                         )}
                                         {issue.impact.accessibility && issue.impact.accessibility !== 'none' && (
                                             <div className="flex items-center gap-1 text-[10px] font-bold" style={{ color: primary }}>
-                                                ♿ A11y {getImpactBadge(issue.impact.accessibility)}
+                                                <IconAccessibility />
+                                                <span>A11y</span>
+                                                {getImpactBadge(issue.impact.accessibility)}
                                             </div>
                                         )}
                                         {issue.impact.seo && issue.impact.seo !== 'none' && (
                                             <div className="flex items-center gap-1 text-[10px] font-bold" style={{ color: primary }}>
-                                                📈 SEO {getImpactBadge(issue.impact.seo)}
+                                                <IconSEO />
+                                                <span>SEO</span>
+                                                {getImpactBadge(issue.impact.seo)}
                                             </div>
                                         )}
                                     </div>
@@ -433,10 +509,11 @@ const WebsiteAuditor = ({ theme = {}, onBack }) => {
                 })}
             </div>
 
-            {/* Scrollbar Styles */}
+            {/* Scrollbar Styles – now includes horizontal styling */}
             <style>{`
                 .custom-scroll::-webkit-scrollbar {
                     width: 8px;
+                    height: 8px;   /* horizontal scrollbar same thickness */
                 }
                 .custom-scroll::-webkit-scrollbar-track {
                     background: ${lightGray};
@@ -449,6 +526,10 @@ const WebsiteAuditor = ({ theme = {}, onBack }) => {
                 }
                 .custom-scroll::-webkit-scrollbar-thumb:hover {
                     background: ${primary};
+                }
+                /* Horizontal thumb uses same styles automatically, but ensure consistency */
+                .custom-scroll::-webkit-scrollbar-corner {
+                    background: transparent;
                 }
                 
                 @keyframes spin {
