@@ -2,6 +2,20 @@
   // ------------------- helpers -------------------
 
   /**
+ * Check if an element belongs to the NERD extension UI (floating buttons, modals)
+ */
+  function isExtensionUI(element) {
+    let el = element;
+    while (el) {
+      if (el.id === 'ext-form-saver-btn' || el.id === 'ext-form-saver-modal') {
+        return true;
+      }
+      el = el.parentElement;
+    }
+    return false;
+  }
+
+  /**
    * Gets CSS selector for element (improved)
    */
   function getSelector(element) {
@@ -331,7 +345,8 @@
    */
   function analyzeColorContrast() {
     const issues = [];
-    const textElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, a, li, div, label, button');
+    const allTextElements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, a, li, div, label, button');
+    const textElements = Array.from(allTextElements).filter(el => !isExtensionUI(el));
     const seen = new Set();
 
     for (const el of textElements) {
@@ -429,7 +444,8 @@
    */
   function analyzeInlineStyles() {
     const issues = [];
-    const elementsWithStyle = document.querySelectorAll('[style]');
+    const elementsWithStyle = Array.from(document.querySelectorAll('[style]'))
+      .filter(el => !isExtensionUI(el));
 
     for (const el of elementsWithStyle) {
       const styleAttr = el.getAttribute('style');
@@ -478,7 +494,8 @@
       'oncontextmenu', 'ondblclick', 'onmousedown', 'onmouseup', 'onmousemove'
     ];
 
-    const allElements = document.querySelectorAll('*');
+    const allElements = Array.from(document.querySelectorAll('*'))
+      .filter(el => !isExtensionUI(el));
     const seen = new Set();
 
     for (const el of allElements) {
@@ -543,7 +560,7 @@
 
   // Listen for messages from the extension
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === 'runWebsiteAutior') {
+    if (message.action === 'runWebsiteAuditor') {
       runFullAnalysis().then(issues => {
         sendResponse({ success: true, issues });
       }).catch(err => {
