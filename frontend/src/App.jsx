@@ -8,7 +8,7 @@ import LocalFormSaver from './components/LocalFormSaver/LocalFormSaver';
 import CollectionDetail from './components/LocalFormSaver/CollectionDetail';
 import Form from './components/LocalFormSaver/Form';
 import WebsiteAuditor from './components/WebsiteAuditor/WebsiteAuditor';
-import ConsoleErrorExplainer from "./components/ConsoleErrorExplainer/ConsoleErrorExplainer";
+import DebuggingAssistant from "./components/DebuggingAssistant/DebuggingAssistant";
 import Translify from './components/Translify/Translify';
 import ScreenSizeEmulator from './components/ScreenSizeEmulator';
 
@@ -89,7 +89,7 @@ function App() {
         <>
           {selectedFeature.id === 1 && <LocalFormSaver theme={THEME} onBack={handleBack} />}
           {selectedFeature.id === 2 && <WebsiteAuditor theme={THEME} onBack={handleBack} />}
-          {selectedFeature.id === 3 && <ConsoleErrorExplainer theme={THEME} onBack={handleBack} />}
+          {selectedFeature.id === 3 && <DebuggingAssistant theme={THEME} onBack={handleBack} />}
           {selectedFeature.id === 7 && <CollectionDetail theme={THEME} collection={selectedFeature.collection} onBack={handleBack} />}
           {selectedFeature.id === 8 && <Form theme={THEME} form={selectedFeature.form} collection={selectedFeature.collection} onBack={handleBack} />}
         </>

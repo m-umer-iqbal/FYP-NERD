@@ -48,12 +48,12 @@
             ],
             "run_at": "document_end",
             "js": [
-                "./src/scripts/ConsoleErrorExplainer.js"
+                "./src/scripts/DebuggingAssistant.js"
             ]
         }
     ],
     "background": {
-        "service_worker": "./src/scripts/ConsoleErrorExplainer-Background.js",
+        "service_worker": "./src/scripts/DebuggingAssistant-Background.js",
         "type": "module"
     },
     "web_accessible_resources": [

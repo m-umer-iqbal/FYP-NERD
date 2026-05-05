@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 
-const ConsoleErrorExplainer = ({ theme = {}, onBack }) => {
+const DebuggingAssistant = ({ theme = {}, onBack }) => {
     const {
         primary = '#021a54',
         accent = '#f472b6',
@@ -158,10 +158,10 @@ const ConsoleErrorExplainer = ({ theme = {}, onBack }) => {
             <div className="flex justify-between items-start mb-3">
                 <div>
                     <h1 className="text-2xl font-bold" style={{ color: primary }}>
-                        Console Error Explainer
+                        Debugging Assistant
                     </h1>
                     <h2 className="text-xl font-semibold" style={{ color: accent }}>
-                        Debugging Assistant
+                        Console Error Explainer
                     </h2>
                 </div>
                 <button
@@ -501,4 +501,4 @@ const ConsoleErrorExplainer = ({ theme = {}, onBack }) => {
     );
 };
 
-export default ConsoleErrorExplainer;
+export default DebuggingAssistant;
