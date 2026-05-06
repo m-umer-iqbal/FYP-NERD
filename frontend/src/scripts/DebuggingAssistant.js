@@ -337,10 +337,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 sendResponse({ success: true });
                 break;
             default:
-                sendResponse({ success: false, error: 'Unknown action' });
+                // Do not respond for actions we do not handle.
+                // This allows other content scripts in the same tab to handle the message.
+                return false;
         }
     } catch (error) {
         sendResponse({ success: false, error: error.message });
+        return true;
     }
     return true;
 });
