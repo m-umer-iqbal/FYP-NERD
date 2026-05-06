@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "NERD",
     "version": "6.0.0",
-    "description": "A browser extension for web developers during local development.",
+    "description": "NERD - Next-gen Extension for Rapid Development",
     "permissions": [
         "storage",
         "activeTab",
@@ -11,7 +11,12 @@
         "contextMenus"
     ],
     "host_permissions": [
-        "<all_urls>"
+        "http://localhost/*",
+        "https://localhost/*",
+        "http://127.0.0.1/*",
+        "https://127.0.0.1/*",
+        "http://[::1]/*",
+        "https://[::1]/*"
     ],
     "content_scripts": [
         {
@@ -39,15 +44,7 @@
             ],
             "run_at": "document_end",
             "js": [
-                "./src/scripts/WebsiteAuditor.js"
-            ]
-        },
-        {
-            "matches": [
-                "<all_urls>"
-            ],
-            "run_at": "document_end",
-            "js": [
+                "./src/scripts/WebsiteAuditor.js",
                 "./src/scripts/DebuggingAssistant.js"
             ]
         }
@@ -58,11 +55,16 @@
     },
     "web_accessible_resources": [
         {
+            "matches": [
+                "http://localhost/*",
+                "https://localhost/*",
+                "http://127.0.0.1/*",
+                "https://127.0.0.1/*",
+                "http://[::1]/*",
+                "https://[::1]/*"
+            ],
             "resources": [
                 "page-monitor.js"
-            ],
-            "matches": [
-                "<all_urls>"
             ]
         }
     ],
