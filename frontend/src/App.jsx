@@ -26,10 +26,7 @@ function App() {
   const features = [
     { id: 1, name: "Local Form Saver" },
     { id: 2, name: "Website Auditor" },
-    { id: 3, name: "Console Error Explainer" },
-    // { id: 4, name: "DOM Tree" },
-    // { id: 5, name: "Translify" },
-    // { id: 6, name: "Screen Size Emulator" },
+    { id: 3, name: "Debugging Assistant" },
   ];
 
   const handleFeatureSelect = (feature) => {
