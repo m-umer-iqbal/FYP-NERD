@@ -15,7 +15,7 @@ const DebuggingAssistant = ({ theme = {}, onBack }) => {
     const [activeCategory, setActiveCategory] = useState('all');
     const [expandedError, setExpandedError] = useState(null);
 
-    const activeTabId = useRef(null);           // current tab's ID
+    const activeTabId = useRef(null);
 
     // On mount: capture the active tab ID, then ask its content script for errors
     useEffect(() => {
@@ -23,15 +23,13 @@ const DebuggingAssistant = ({ theme = {}, onBack }) => {
             if (!tab) return;
             activeTabId.current = tab.id;
 
-            // Fetch current errors from this tab's content script (if any)
             chrome.tabs.sendMessage(tab.id, { action: 'getErrors' }, (response) => {
-                if (chrome.runtime.lastError) return;   // content script not available
+                if (chrome.runtime.lastError) return;
                 if (response && response.success) {
                     setErrors(response.errors || []);
                 }
             });
 
-            // Fetch monitoring status as well
             chrome.tabs.sendMessage(tab.id, { action: 'getMonitoringStatus' }, (res) => {
                 if (chrome.runtime.lastError) return;
                 if (res && res.success) {
@@ -44,7 +42,6 @@ const DebuggingAssistant = ({ theme = {}, onBack }) => {
     // Live subscription to errors – only accept those from the current tab
     useEffect(() => {
         const messageHandler = (message, sender) => {
-            // Only process errors that come from our active tab
             if (sender.tab && sender.tab.id === activeTabId.current) {
                 if (message.type === 'ERRORS_UPDATED' && message.errors) {
                     setErrors(message.errors);
@@ -94,7 +91,7 @@ const DebuggingAssistant = ({ theme = {}, onBack }) => {
         }
     }, [monitoringActive]);
 
-    // ---------------- Everything below is your exact original design (no changes) ----------------
+    // ---------------- Filtering & helpers (unchanged) ----------------
     const filteredErrors = useMemo(() =>
         activeCategory === 'all'
             ? errors
@@ -262,9 +259,9 @@ const DebuggingAssistant = ({ theme = {}, onBack }) => {
                             </>
                         ) : (
                             <>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5z"
-                                        stroke="currentColor" strokeWidth="2" fill="none" />
+                                {/* Play icon replaces search icon */}
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M8 5v14l11-7z" />
                                 </svg>
                                 <span>Start Monitoring</span>
                             </>
@@ -347,21 +344,21 @@ const DebuggingAssistant = ({ theme = {}, onBack }) => {
                                 </button>
                             </div>
 
-                            {/* Expanded Details (unchanged) */}
+                            {/* Expanded Details – emojis replaced by SVG icons */}
                             {isExpanded && (
                                 <div
                                     className="px-3 pb-3 pt-0 border-t animate-in fade-in"
                                     style={{ borderColor: lightPink }}
                                 >
-                                    {/* Location */}
+                                    {/* Location (SVG icon already present, unchanged) */}
                                     <div className="mt-3">
-                                        <p className="flex text-[10px] font-bold uppercase tracking-wider" style={{ color: accent }}>
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-1">
+                                        <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider" style={{ color: accent }}>
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                                                 <circle cx="12" cy="10" r="3"></circle>
                                             </svg>
                                             Location
-                                        </p>
+                                        </div>
                                         <p
                                             className="text-xs font-mono mt-1 break-all"
                                             style={{ color: primary }}
@@ -372,9 +369,15 @@ const DebuggingAssistant = ({ theme = {}, onBack }) => {
 
                                     {/* Meaning */}
                                     <div className="mt-3">
-                                        <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: accent }}>
-                                            💡 What's Happening
-                                        </p>
+                                        <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider" style={{ color: accent }}>
+                                            {/* Lightbulb icon */}
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M9 18h6" />
+                                                <path d="M10 22h4" />
+                                                <path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V15a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7z" />
+                                            </svg>
+                                            What's Happening
+                                        </div>
                                         <p className="text-xs mt-1" style={{ color: primary }}>
                                             {error.meaning}
                                         </p>
@@ -382,9 +385,14 @@ const DebuggingAssistant = ({ theme = {}, onBack }) => {
 
                                     {/* Root Causes */}
                                     <div className="mt-3">
-                                        <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: accent }}>
-                                            🔍 Possible Causes
-                                        </p>
+                                        <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider" style={{ color: accent }}>
+                                            {/* Search/magnifier icon */}
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <circle cx="11" cy="11" r="8" />
+                                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                            </svg>
+                                            Possible Causes
+                                        </div>
                                         <ul className="list-disc list-inside text-xs mt-1" style={{ color: primary }}>
                                             {error.rootCauses.map((cause, i) => (
                                                 <li key={i}>{cause}</li>
@@ -394,9 +402,13 @@ const DebuggingAssistant = ({ theme = {}, onBack }) => {
 
                                     {/* Fixes */}
                                     <div className="mt-3">
-                                        <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: accent }}>
-                                            🔧 Fix Suggestions
-                                        </p>
+                                        <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider" style={{ color: accent }}>
+                                            {/* Wrench icon */}
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.77 3.77z" />
+                                            </svg>
+                                            Fix Suggestions
+                                        </div>
                                         {error.fixes.map((fix, idx) => (
                                             <div key={idx} className="mt-2 p-2 rounded-lg" style={{ background: lightGray }}>
                                                 <div className="flex items-center justify-between mb-1">
@@ -417,9 +429,15 @@ const DebuggingAssistant = ({ theme = {}, onBack }) => {
 
                                     {/* Impact */}
                                     <div className="mt-3 flex items-center gap-2 flex-wrap">
-                                        <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: accent }}>
-                                            📊 Impact
-                                        </p>
+                                        <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider" style={{ color: accent }}>
+                                            {/* Bar chart icon */}
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <line x1="18" y1="20" x2="18" y2="10" />
+                                                <line x1="12" y1="20" x2="12" y2="4" />
+                                                <line x1="6" y1="20" x2="6" y2="14" />
+                                            </svg>
+                                            Impact
+                                        </div>
                                         {error.impact.functionality && (
                                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: '#fef3c7', color: '#d97706' }}>
                                                 ⚠️ Breaks Functionality
